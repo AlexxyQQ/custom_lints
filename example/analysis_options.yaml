@@ -1,0 +1,9 @@
+include: package:flutter_lints/flutter.yaml
+
+linter:
+  rules:
+
+# Custom lint plugin
+analyzer:
+  plugins:
+    - custom_lint

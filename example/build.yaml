@@ -1,0 +1,14 @@
+targets:
+  $default:
+    builders:
+      flutter_gen_runner:
+        enabled: true
+        options:
+          output: lib/constants/gen/
+          line_length: 80
+
+      easy_localization/generate:
+        options:
+          source_dir: assets/translations
+          output_dir: lib/constants/gen
+          output_file_name: locale_keys.g.dart

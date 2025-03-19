@@ -1,0 +1,53 @@
+name: example
+description: "A new Flutter project."
+
+publish_to: "none"
+
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.7.0
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  cupertino_icons: ^1.0.8
+  easy_localization: ^3.0.7+1
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+  flutter_lints: ^5.0.0
+
+  # Custom lint plugin
+  custom_lint:
+  app_custom_lints:
+    path: ../
+  build_runner: ^2.4.15
+  flutter_gen_runner: ^5.10.0
+
+flutter:
+  uses-material-design: true
+
+  assets:
+    - assets/translations/
+    - assets/images/
+    - assets/icons/
+
+flutter_gen:
+  output: lib/constants/gen/
+  line_length: 80
+
+  integrations:
+    flutter_svg: true
+
+  assets:
+    enabled: true
+    outputs:
+      class_name: Assets
+      package_parameter_enabled: false
+
+  fonts:
+    enabled: true
