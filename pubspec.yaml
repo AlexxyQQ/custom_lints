@@ -1,7 +1,7 @@
 name: app_custom_lints
 description: A starting point for Dart libraries or applications.
 version: 1.0.0
-# repository: https://github.com/my_org/my_repo
+repository: https://github.com/AlexxyQQ/custom_lints
 
 environment:
   sdk: ^3.7.0
