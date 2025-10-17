@@ -1,7 +1,6 @@
 import 'package:analyzer/dart/ast/ast.dart';
 import 'package:analyzer/dart/element/element.dart';
-import 'package:analyzer/diagnostic/diagnostic.dart';
-import 'package:analyzer/error/error.dart' hide LintCode;
+import 'package:analyzer/error/error.dart' show AnalysisError, ErrorSeverity;
 import 'package:analyzer/error/listener.dart';
 import 'package:custom_lint_builder/custom_lint_builder.dart';
 
@@ -10,16 +9,30 @@ class HardcodedStringLintRule extends DartLintRule {
 
   static const _code = LintCode(
     name: 'avoid_hardcoded_strings_in_widgets',
-    problemMessage: 'Hardcoded string detected in widget ⚠️ ',
+    problemMessage:
+        'String literals should not be declared inside a widget '
+        'class. '
+        'If this string is used for presentation, such as in a Text widget, '
+        'it will make harder adding l10n support. '
+        'If this string is used for comparison, such as: membership == "free", '
+        'it is a sign of primitive obsession.\n\n'
+        'Example of correct usage:\n'
+        '- Using easy_localization: Text(LocaleKeys.some_key.tr())\n'
+        '- Using Flutter gen-l10n: Text(AppLocalizations.of(context)!.someKey)',
     correctionMessage:
-        'Replace hardcoded string with a variable or localized string.',
-    errorSeverity: DiagnosticSeverity.ERROR,
+        'If this is for presentation:\n'
+        '1. Use a localization package (easy_localization or Flutter gen-l10n)\n'
+        '2. Generate localization keys\n'
+        '3. Add translations to locale files\n'
+        '4. Use generated keys instead of hardcoded strings\n\n'
+        'If this is for comparison, consider using an enum instead.',
+    errorSeverity: ErrorSeverity.ERROR,
   );
 
   @override
   void run(
     CustomLintResolver resolver,
-    DiagnosticReporter reporter,
+    ErrorReporter reporter,
     CustomLintContext context,
   ) {
     context.registry.addStringLiteral((node) {
@@ -27,7 +40,7 @@ class HardcodedStringLintRule extends DartLintRule {
     });
   }
 
-  void _checkStringLiteral(StringLiteral node, DiagnosticReporter reporter) {
+  void _checkStringLiteral(StringLiteral node, ErrorReporter reporter) {
     // Check for ignore comments
     if (_hasIgnoreComment(node)) return;
 
@@ -69,19 +82,9 @@ class HardcodedStringLintRule extends DartLintRule {
   }
 
   bool _isPassedToWidget(StringLiteral node) {
-    // We only consider strings that are direct arguments of a widget
-    // constructor call. This avoids flagging strings located inside
-    // callback/function bodies (e.g., logger.info('...') inside a
-    // BlocListener listener).
-
-    // Find the nearest ArgumentList ancestor that contains this string.
     final argumentList = node.thisOrAncestorOfType<ArgumentList>();
     if (argumentList == null) return false;
 
-    // If there is a FunctionExpression/FunctionBody between the string
-    // and the ArgumentList, then this string belongs to a different
-    // invocation (e.g., a callback body) and should not be treated as
-    // a widget argument.
     var walker = node.parent;
     while (walker != null && walker != argumentList) {
       if (walker is FunctionExpression || walker is FunctionBody) {
@@ -90,16 +93,15 @@ class HardcodedStringLintRule extends DartLintRule {
       walker = walker.parent;
     }
 
-    // Ensure that this argument list belongs to an InstanceCreationExpression
-    // (i.e., a constructor call) and that the constructed type is a Widget.
     final owner = argumentList.parent;
     if (owner is! InstanceCreationExpression) return false;
 
     final type = owner.staticType;
-    if (type == null || !_isFlutterWidget(type.element)) return false;
+    if (type == null) return false;
 
-    // Verify the string is directly part of this ArgumentList (either as a
-    // positional argument or as the value of a NamedExpression).
+    final element = type.element;
+    if (element == null || !_isFlutterWidget(element)) return false;
+
     for (final arg in argumentList.arguments) {
       if (identical(arg, node)) return true;
       if (arg is NamedExpression && identical(arg.expression, node)) {
@@ -113,7 +115,6 @@ class HardcodedStringLintRule extends DartLintRule {
   bool _isFlutterWidget(Element? element) {
     if (element == null) return false;
 
-    // Check if the class extends Widget, StatefulWidget, or StatelessWidget
     if (element is ClassElement) {
       return _extendsWidget(element);
     }
@@ -122,24 +123,19 @@ class HardcodedStringLintRule extends DartLintRule {
   }
 
   bool _extendsWidget(ClassElement element) {
-    // Check the inheritance chain for Widget classes
     ClassElement? current = element;
 
     while (current != null) {
       final className = current.name;
 
-      // Common Flutter widget base classes
-      if (_isWidgetBaseClass(className ?? '')) {
+      if (_isWidgetBaseClass(className)) {
         return true;
       }
 
-      // Check supertype
       final supertype = current.supertype;
       if (supertype != null) {
-        current =
-            supertype.element is ClassElement
-                ? supertype.element as ClassElement
-                : null;
+        final supertypeElement = supertype.element;
+        current = supertypeElement is ClassElement ? supertypeElement : null;
       } else {
         break;
       }
@@ -173,28 +169,20 @@ class HardcodedStringLintRule extends DartLintRule {
 
     final propertyName = parent.name.label.name;
 
-    // Widget properties where hardcoded strings are commonly acceptable
     const acceptableProperties = {
-      // Accessibility and semantics
       'semanticsLabel',
       'excludeSemantics',
-
-      // Technical identifiers
       'restorationId',
       'heroTag',
       'key',
       'debugLabel',
-
-      // Asset and resource references
       'fontFamily',
       'package',
-      'name', // Asset names
-      'asset', // Asset paths
-      // Development and debugging
-      'tooltip', // Can be acceptable for simple tooltips
-      // Widget-specific technical properties
-      'textDirection', // When passed as string
-      'locale', // Language codes
+      'name',
+      'asset',
+      'tooltip',
+      'textDirection',
+      'locale',
       'materialType',
       'clipBehavior',
       'crossAxisAlignment',
@@ -210,27 +198,16 @@ class HardcodedStringLintRule extends DartLintRule {
   }
 
   bool _isTechnicalString(String value) {
-    // Skip strings that are clearly technical or configuration values
     final technicalPatterns = [
-      // URLs
       RegExp(r'^\w+://'),
-      // Email addresses
       RegExp(r'^[\w\-\.]+@[\w\-\.]+\.\w+'),
-      // Hex colors
-      RegExp('^#[0-9A-Fa-f]{3,8}'),
-      // Numbers with optional units
+      RegExp(r'^#[0-9A-Fa-f]{3,8}'),
       RegExp(r'^\d+(\.\d+)?[a-zA-Z]*'),
-      // CONSTANT_CASE (all caps with underscores, at least 2 parts)
-      RegExp('^[A-Z][A-Z0-9]*_[A-Z0-9_]*'),
-      // snake_case identifiers (lowercase with underscores, at least 2 parts)
-      RegExp('^[a-z]+_[a-z_]+'),
-      // File paths
+      RegExp(r'^[A-Z][A-Z0-9]*_[A-Z0-9_]*'),
+      RegExp(r'^[a-z]+_[a-z_]+'),
       RegExp(r'^/[\w/\-\.]*'),
-      // Dotted notation (e.g., package.asset)
       RegExp(r'^\w+\.\w+'),
-      // File names with extensions
       RegExp(r'^[\w\-]+\.[\w]+'),
-      // Identifiers with numbers/underscores/hyphens (but not pure words)
       RegExp(r'^[a-zA-Z0-9]*[_\-0-9]+[a-zA-Z0-9_\-]*'),
     ];
 
@@ -245,16 +222,13 @@ class HardcodedStringLintRule extends DartLintRule {
     final location = lineInfo.getLocation(node.offset);
     final line = location.lineNumber;
 
-    // Check for ignore comment on the same line or the line before
     final source = compilationUnit.toSource();
     final lines = source.split('\n');
 
     if (line > 0 && line <= lines.length) {
-      // Check current line
       final currentLine = lines[line - 1];
       if (_containsIgnoreComment(currentLine)) return true;
 
-      // Check previous line
       if (line > 1) {
         final previousLine = lines[line - 2];
         if (_containsIgnoreComment(previousLine)) return true;
@@ -285,8 +259,8 @@ class _AddIgnoreCommentFix extends DartFix {
     CustomLintResolver resolver,
     ChangeReporter reporter,
     CustomLintContext context,
-    Diagnostic analysisError,
-    List<Diagnostic> others,
+    AnalysisError analysisError,
+    List<AnalysisError> others,
   ) {
     context.registry.addStringLiteral((node) {
       if (!analysisError.sourceRange.intersects(node.sourceRange)) return;
@@ -304,7 +278,6 @@ class _AddIgnoreCommentFix extends DartFix {
         final location = lineInfo.getLocation(node.offset);
         final lineStart = lineInfo.getOffsetOfLine(location.lineNumber - 1);
 
-        // Find the indentation of the current line
         final source = compilationUnit.toSource();
         final currentLineStart = source.substring(lineStart, node.offset);
         final indentMatch = RegExp(r'^(\s*)').firstMatch(currentLineStart);
@@ -325,8 +298,8 @@ class _ExtractToVariableFix extends DartFix {
     CustomLintResolver resolver,
     ChangeReporter reporter,
     CustomLintContext context,
-    Diagnostic analysisError,
-    List<Diagnostic> others,
+    AnalysisError analysisError,
+    List<AnalysisError> others,
   ) {
     context.registry.addStringLiteral((node) {
       if (!analysisError.sourceRange.intersects(node.sourceRange)) return;
@@ -340,10 +313,8 @@ class _ExtractToVariableFix extends DartFix {
       );
 
       changeBuilder.addDartFileEdit((builder) {
-        // Generate a variable name from the string content
         final variableName = _generateVariableName(stringValue);
 
-        // Find the method or class to add the variable to
         var parent = node.parent;
         while (parent != null &&
             parent is! MethodDeclaration &&
@@ -352,7 +323,6 @@ class _ExtractToVariableFix extends DartFix {
         }
 
         if (parent is MethodDeclaration) {
-          // Add variable at the beginning of the method
           final methodBody = parent.body;
           if (methodBody is BlockFunctionBody) {
             final block = methodBody.block;
@@ -363,11 +333,9 @@ class _ExtractToVariableFix extends DartFix {
               '\n    const $variableName = ${node.toSource()};\n',
             );
 
-            // Replace the string literal with the variable
             builder.addSimpleReplacement(node.sourceRange, variableName);
           }
         } else if (parent is ClassDeclaration) {
-          // Add as a class field
           final insertOffset = parent.leftBracket.offset + 1;
 
           builder.addSimpleInsertion(
@@ -375,7 +343,6 @@ class _ExtractToVariableFix extends DartFix {
             '\n  static const $variableName = ${node.toSource()};\n',
           );
 
-          // Replace the string literal with the variable
           builder.addSimpleReplacement(node.sourceRange, variableName);
         }
       });
@@ -383,7 +350,6 @@ class _ExtractToVariableFix extends DartFix {
   }
 
   String _generateVariableName(String value) {
-    // Convert string to a reasonable variable name
     final words =
         value
             .replaceAll(RegExp(r'[^\w\s]'), '')
@@ -391,12 +357,11 @@ class _ExtractToVariableFix extends DartFix {
             .toLowerCase()
             .split(RegExp(r'\s+'))
             .where((word) => word.isNotEmpty)
-            .take(3) // Limit to first 3 words
+            .take(3)
             .toList();
 
     if (words.isEmpty) return 'textValue';
 
-    // First word lowercase, capitalize subsequent words (camelCase)
     final camelCase =
         words.first +
         words

@@ -13,7 +13,7 @@ class CustomLintPlugin extends PluginBase {
   List<LintRule> getLintRules(CustomLintConfigs configs) {
     return [
       const HardcodedStringLintRule(),
-      const EvenNumbersOnlyLintRule(),
+      // const EvenNumbersOnlyLintRule(),
     ];
   }
 }
@@ -46,7 +46,7 @@ class _CustomLints extends PluginBase {
 
     return [
       const HardcodedStringLintRule(),
-      const EvenNumbersOnlyLintRule(),
+      // const EvenNumbersOnlyLintRule(),
     ];
   }
 }
