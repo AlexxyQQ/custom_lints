@@ -36,7 +36,7 @@ class NoHardcodedStringsRule extends DartLintRule {
         '4. Use generated keys instead of hardcoded strings\n\n'
         'If this is for comparison, consider using an enum instead.',
     // The severity of the lint. Can be Error, Warning, or Info.
-    errorSeverity: analyzer.DiagnosticSeverity.WARNING,
+    errorSeverity: analyzer.ErrorSeverity.WARNING,
   );
 
   /// This method is the core of the lint rule. It is called by the analyzer
@@ -44,7 +44,7 @@ class NoHardcodedStringsRule extends DartLintRule {
   @override
   void run(
     CustomLintResolver resolver,
-    DiagnosticReporter reporter,
+    ErrorReporter reporter,
     CustomLintContext context,
   ) {
     // We want to inspect the code for every instance of a widget being created.
@@ -54,7 +54,7 @@ class NoHardcodedStringsRule extends DartLintRule {
       // First, we check if the widget being created is a `Text` widget.
       // We get the name of the class from the constructor (`node.constructorName.type`).
       // We ignore other widgets to keep the lint focused.
-      if (node.constructorName.type.name.toString() != 'Text') {
+      if (node.constructorName.name?.name != 'Text') {
         return;
       }
 

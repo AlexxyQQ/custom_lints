@@ -1,61 +1,60 @@
-<!--
-This README describes the package. If you publish this package to pub.dev,
-this README's contents appear on the landing page for your package.
-
-For information about how to write a good package README, see the guide for
-[writing package pages](https://dart.dev/tools/pub/writing-package-pages).
-
-For general information about developing packages, see the Dart guide for
-[creating packages](https://dart.dev/guides/libraries/create-packages)
-and the Flutter guide for
-[developing packages and plugins](https://flutter.dev/to/develop-packages).
--->
-
 # App Custom Lints
 
-A collection of custom lint rules for Flutter/Dart projects, focusing on enforcing best practices and code quality. Currently includes a powerful rule to detect and prevent hardcoded strings in Flutter widgets.
+[](https://opensource.org/licenses/MIT)
+[](https://pub.dev/packages/custom_lint)
+[](https://flutter.dev)
+
+A collection of opinionated custom lint rules for Dart & Flutter projects. This package is designed to enforce a strict and consistent design system, improve code quality, and promote best practices like internationalization.
+
+---
 
 ## Features
 
-- 🔍 **No Hardcoded Strings Rule**: Detects and warns against string literals in Text widgets
-- 🌍 **Internationalization Support**: Enforces proper i18n practices
-- 🚀 **Easy Integration**: Simple setup with custom_lint
-- ⚡ **Performance**: Minimal impact on analysis time
+- 🌍 **Enforce Internationalization (i18n)**: The `avoid_string_literals_inside_widget` rule detects hardcoded strings in `Text` widgets, pushing you to use a proper localization flow.
+- 📐 **Enforce Design System Consistency**: The `avoid_odd_numbers_in_ui_extensions` rule ensures all spacing, padding, and radius values are even, helping maintain a consistent grid system (e.g., 8pt grid).
+- 🚀 **Easy Integration**: Simple to set up in any project using the official `custom_lint` package.
+- ⚡ **Fast Analysis**: Written to have a minimal impact on IDE performance and analysis time.
 
 ## Installation
 
-Add the package to your `pubspec.yaml` in the `dev_dependencies` section:
+1.  **Add dependencies**
 
-```yaml
-dev_dependencies:
-  custom_lint: ^latest_version
-  app_custom_lints:
-    git:
-      url: https://github.com/AlexxyQQ/custom_lints.git
-      ref: main # or specify a commit hash/tag
-```
+    Add `custom_lint` and this package to your `pubspec.yaml` under `dev_dependencies`.
 
-Then run:
+    ```yaml
+    dev_dependencies:
+      custom_lint: ^0.6.4 # Use the latest version
+      app_custom_lints:
+        git:
+          url: https://github.com/AlexxyQQ/custom_lints.git
+          ref: main # You can also pin to a specific commit hash or tag
+    ```
 
-```bash
-flutter pub get
-```
+2.  **Get packages**
 
-Create or update your `analysis_options.yaml`:
+    Run the command to fetch the packages.
 
-```yaml
-analyzer:
-  plugins:
-    - custom_lint
-```
+    ```bash
+    flutter pub get
+    ```
+
+3.  **Enable the plugin**
+
+    Create or update your `analysis_options.yaml` file to enable the `custom_lint` plugin.
+
+    ```yaml
+    analyzer:
+      plugins:
+        - custom_lint
+    ```
 
 ## Available Rules
 
-### avoid_string_literals_inside_widget
+### `avoid_string_literals_inside_widget`
 
-Detects hardcoded string literals inside Flutter widgets to enforce proper internationalization practices.
+This rule detects hardcoded string literals inside `Text` widgets to enforce proper internationalization practices. This makes your app easier to translate and maintain.
 
-#### ❌ What it catches:
+#### ❌ Bad Code:
 
 ```dart
 // These will trigger the lint
@@ -63,88 +62,84 @@ Text('Hello World');
 Text(data: 'Welcome User');
 ```
 
-#### ✅ Correct usage:
+#### ✅ Good Code:
 
-Using Easy Localization:
+**Using Flutter gen-l10n:**
 
 ```dart
-// 1. Define keys in locale_keys.g.dart
-abstract class LocaleKeys {
-  static const hello_world = 'hello_world';
-}
+// In your ARB file (e.g., app_en.arb)
+// { "helloWorld": "Hello World" }
 
-// 2. Add translations in assets/translations/en.json
-{
-  "hello_world": "Hello World"
-}
+// In your widget
+Text(AppLocalizations.of(context)!.helloWorld);
+```
 
-// 3. Use in your code
+**Using easy_localization:**
+
+```dart
+// In your JSON file (e.g., assets/translations/en.json)
+// { "hello_world": "Hello World" }
+
+// In your widget
 Text(LocaleKeys.hello_world.tr());
 ```
 
-Using Flutter gen-l10n:
+---
+
+### `avoid_odd_numbers_in_ui_extensions`
+
+This rule enforces an even-numbered design system by flagging odd numbers used for UI dimensions like padding, spacing, and corner radii. This is especially useful when using a sizing extension on `num`.
+
+#### ❌ Bad Code:
 
 ```dart
-// In your ARB files (app_en.arb)
-{
-  "helloWorld": "Hello World"
-}
+// These will trigger the lint
+Padding(padding: 7.allPadding);
+SizedBox(width: 9.w);
+Container(
+  decoration: BoxDecoration(
+    borderRadius: 15.rounded,
+  ),
+);
+```
 
-// In your code
-Text(AppLocalizations.of(context)!.helloWorld);
+#### ✅ Good Code:
+
+```dart
+// Use even numbers for consistency
+Padding(padding: 8.allPadding);
+SizedBox(width: 10.w);
+Container(
+  decoration: BoxDecoration(
+    borderRadius: 16.rounded,
+  ),
+);
 ```
 
 ## Rule Configuration
 
-The rules can be configured in your `analysis_options.yaml`:
+You can enable/disable rules or change their severity in your `analysis_options.yaml` file.
 
 ```yaml
 custom_lint:
   rules:
-    - avoid_string_literals_inside_widget:
-        severity: error # or warning
+    # Enable a rule (defaults to a warning)
+    - avoid_string_literals_inside_widget: true
+    # Enable a rule and set its severity to error
+    - avoid_odd_numbers_in_ui_extensions:
+        severity: error
 ```
-
-## Best Practices
-
-1. Always use localization keys instead of hardcoded strings
-2. Keep translation files organized and up-to-date
-3. Use code generation tools for managing localization keys
-4. Consider using enums for string comparisons instead of hardcoded strings
 
 ## Contributing
 
-We welcome contributions! Here's how you can help:
+Contributions are welcome\! If you have an idea for a new rule or an improvement, please follow these steps:
 
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add some amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+1.  Fork the repository.
+2.  Create your feature branch (`git checkout -b feature/amazing-feature`).
+3.  Commit your changes (`git commit -m 'Add some amazing feature'`).
+4.  Push to the branch (`git push origin feature/amazing-feature`).
+5.  Open a Pull Request.
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## Support
-
-Need help? Here's how to get support:
-
-- 📖 Check out the [example](example) directory for more usage examples
-- 🐛 File an issue on [GitHub](https://github.com/AlexxyQQ/custom_lints/issues)
-- 💡 Suggest new lint rules or improvements
-
-## Troubleshooting
-
-If you encounter any issues:
-
-1. Make sure you have the latest version by updating your `pubspec.yaml` and running `flutter pub get`
-2. Check that your `analysis_options.yaml` is properly configured
-3. Try running `flutter clean` and then `flutter pub get`
-4. Restart your IDE and/or Flutter analysis server
-
-## Acknowledgments
-
-- Built with [custom_lint](https://pub.dev/packages/custom_lint)
-- Inspired by real-world Flutter development challenges
-- Thanks to all contributors who help improve this package
+This project is licensed under the MIT License - see the [LICENSE](https://www.google.com/search?q=LICENSE) file for details.

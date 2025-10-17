@@ -45,13 +45,13 @@ class AvoidOddNumbersInUIExtensions extends DartLintRule {
     name: _name,
     problemMessage: 'UI values must be even numbers to maintain consistency.',
     correctionMessage: 'Please change this to an even number (e.g., 8, 16).',
-    errorSeverity: analyzer.DiagnosticSeverity.ERROR,
+    errorSeverity: analyzer.ErrorSeverity.ERROR,
   );
 
   @override
   void run(
     CustomLintResolver resolver,
-    DiagnosticReporter reporter,
+    ErrorReporter reporter,
     CustomLintContext context,
   ) {
     // A Set containing all the getter names from your extension that are
