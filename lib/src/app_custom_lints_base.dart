@@ -1,6 +1,6 @@
 import 'package:app_custom_lints/src/lint_rules/no_odd_sizes_rule.dart';
 import 'package:custom_lint_builder/custom_lint_builder.dart';
-import 'lint_rules/no_hardcoded_strings_rule.dart';
+import 'package:app_custom_lints/src/lint_rules/no_hardcoded_strings_rule.dart';
 
 /// A custom lint plugin that provides lint rules for analyzing Dart code
 class CustomLintPlugin extends PluginBase {
@@ -11,7 +11,10 @@ class CustomLintPlugin extends PluginBase {
   /// Returns a list containing the [NoHardcodedStringsRule]
   @override
   List<LintRule> getLintRules(CustomLintConfigs configs) {
-    return [const NoHardcodedStringsRule()];
+    return [
+      const HardcodedStringLintRule(),
+      const EvenNumbersOnlyLintRule(),
+    ];
   }
 }
 
@@ -42,8 +45,8 @@ class _CustomLints extends PluginBase {
     }
 
     return [
-      const NoHardcodedStringsRule(),
-      const AvoidOddNumbersInUIExtensions(),
+      const HardcodedStringLintRule(),
+      const EvenNumbersOnlyLintRule(),
     ];
   }
 }

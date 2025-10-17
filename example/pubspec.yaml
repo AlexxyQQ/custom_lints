@@ -6,14 +6,13 @@ publish_to: "none"
 version: 1.0.0+1
 
 environment:
-  sdk: ^3.7.0
+  sdk: ^3.9.2
 
 dependencies:
   flutter:
     sdk: flutter
 
   cupertino_icons: ^1.0.8
-  easy_localization: ^3.0.7+1
 
 dev_dependencies:
   flutter_test:
@@ -21,20 +20,18 @@ dev_dependencies:
 
   flutter_lints: ^5.0.0
 
-  # Custom lint plugin
-  custom_lint:
+  flutter_gen_runner: ^5.12.0
+  build_runner: ^2.9.0
   app_custom_lints:
     path: ../
-  build_runner: ^2.4.15
-  flutter_gen_runner: ^5.10.0
+  custom_lint: ^0.8.0
+  analyzer: ^8.1.1
 
 flutter:
   uses-material-design: true
 
   assets:
     - assets/translations/
-    - assets/images/
-    - assets/icons/
 
 flutter_gen:
   output: lib/constants/gen/

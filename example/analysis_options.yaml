@@ -1,9 +1,11 @@
 include: package:flutter_lints/flutter.yaml
 
-linter:
-  rules:
-
-# Custom lint plugin
 analyzer:
   plugins:
     - custom_lint
+
+# Optional: Configure additional linter rules
+linter:
+  rules:
+    # Your existing rules
+    avoid_odd_numbers_in_ui_extensions: true # This explicitly enables it
