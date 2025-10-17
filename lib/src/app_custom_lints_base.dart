@@ -1,3 +1,4 @@
+import 'package:app_custom_lints/src/lint_rules/no_odd_sizes_rule.dart';
 import 'package:custom_lint_builder/custom_lint_builder.dart';
 import 'lint_rules/no_hardcoded_strings_rule.dart';
 
@@ -40,6 +41,9 @@ class _CustomLints extends PluginBase {
       return [];
     }
 
-    return [const NoHardcodedStringsRule()];
+    return [
+      const NoHardcodedStringsRule(),
+      const AvoidOddNumbersInUIExtensions(),
+    ];
   }
 }

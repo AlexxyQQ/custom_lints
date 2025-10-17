@@ -1,48 +1,23 @@
 import 'package:analyzer/dart/ast/ast.dart';
+import 'package:analyzer/error/error.dart' as analyzer;
 import 'package:analyzer/error/listener.dart';
 import 'package:custom_lint_builder/custom_lint_builder.dart';
-import 'package:custom_lint_core/custom_lint_core.dart';
-import 'package:analyzer/error/error.dart' as analyzer;
 
-/// A lint rule that detects hardcoded string literals inside Flutter widgets.
-///
-/// This rule helps enforce proper internationalization practices by warning when
-/// string literals are used directly in Text widgets. It encourages using
-/// localization instead of hardcoded strings.
-///
-/// Example of incorrect code:
-/// ```dart
-/// Text('Hello World'); // This will trigger the lint
-/// ```
-///
-/// Example of correct code using localization:
-/// ```dart
-/// // 1. First generate localization keys using your preferred tool
-/// // e.g. with easy_localization_generator:
-/// // locale_keys.g.dart
-/// abstract class LocaleKeys {
-///   static const hello_world = 'hello_world';
-/// }
-///
-/// // 2. Add translations to your locale files:
-/// // assets/translations/en.json
-/// {
-///   "hello_world": "Hello World"
-/// }
-///
-/// // 3. Use the generated keys in your widgets:
-/// Text(LocaleKeys.hello_world.tr()); // Using easy_localization
-/// // or
-/// Text(AppLocalizations.of(context)!.helloWorld); // Using Flutter gen-l10n
-/// ```
 class NoHardcodedStringsRule extends DartLintRule {
-  /// Default const constructor
+  /// The constructor for our lint rule.
+  /// It passes the lint's metadata (`_code`) to the superclass.
   const NoHardcodedStringsRule() : super(code: _code);
 
-  /// Metadata about the warning that will show-up in the IDE.
-  /// This is used for `// ignore: code` and enabling/disabling the lint
+  /// A unique identifier for this lint rule.
+  /// This is used for configuration files (e.g., `analysis_options.yaml`)
+  /// and for suppressing the lint with `// ignore: ...` comments.
+  static const _name = 'no_hardcoded_strings_in_text';
+
+  /// The metadata for the lint rule, which defines how it appears in the IDE.
+  /// This includes the error message, a suggested correction, and severity.
   static const _code = LintCode(
     name: _name,
+    // The message that developers will see when the lint is triggered.
     problemMessage:
         'String literals should not be declared inside a widget '
         'class. '
@@ -60,36 +35,53 @@ class NoHardcodedStringsRule extends DartLintRule {
         '3. Add translations to locale files\n'
         '4. Use generated keys instead of hardcoded strings\n\n'
         'If this is for comparison, consider using an enum instead.',
-    errorSeverity: analyzer.ErrorSeverity.ERROR,
-    uniqueName: _name,
+    // The severity of the lint. Can be Error, Warning, or Info.
+    errorSeverity: analyzer.DiagnosticSeverity.WARNING,
   );
 
-  /// The unique name identifier for this lint rule
-  static const _name = 'avoid_string_literals_inside_widget';
-
+  /// This method is the core of the lint rule. It is called by the analyzer
+  /// to inspect the source code.
   @override
   void run(
     CustomLintResolver resolver,
-    ErrorReporter reporter,
+    DiagnosticReporter reporter,
     CustomLintContext context,
   ) {
-    // Register a callback to analyze instance creation expressions
+    // We want to inspect the code for every instance of a widget being created.
+    // `addInstanceCreationExpression` registers a callback that runs whenever
+    // the analyzer encounters a constructor call, like `Text('...')`.
     context.registry.addInstanceCreationExpression((node) {
-      // Check if the widget being created is Text widget
-      if (node.constructorName.type.toString() == 'Text') {
-        // Analyze all arguments passed to the Text widget
-        node.argumentList.arguments.forEach((argument) {
-          if (argument is NamedExpression) {
-            // Check named arguments (e.g., Text(data: "some string"))
-            final expression = argument.expression;
-            if (expression is StringLiteral) {
-              reporter.atNode(expression, _code);
-            }
-          } else if (argument is StringLiteral) {
-            // Check positional arguments (e.g., Text("some string"))
-            reporter.atNode(argument, _code);
+      // First, we check if the widget being created is a `Text` widget.
+      // We get the name of the class from the constructor (`node.constructorName.type`).
+      // We ignore other widgets to keep the lint focused.
+      if (node.constructorName.type.name.toString() != 'Text') {
+        return;
+      }
+
+      // If it is a `Text` widget, we iterate through all the arguments
+      // passed to its constructor.
+      for (final argument in node.argumentList.arguments) {
+        // A string literal can be a positional argument, like `Text('Hello')`,
+        // or a named argument, like `Text(data: 'Hello')`.
+
+        // Case 1: The argument is a direct string literal (positional).
+        // Example: Text('This is a positional argument')
+        if (argument is StringLiteral) {
+          // If we find a hardcoded string, we report it.
+          // `reporter.atNode` highlights the specific string literal in the IDE
+          // and displays the `_code` metadata (problem message, etc.).
+          reporter.atNode(argument, _code);
+        }
+        // Case 2: The argument is a named expression.
+        // Example: Text(data: 'This is a named argument')
+        else if (argument is NamedExpression) {
+          // We check if the value part of the named argument is a string literal.
+          final expression = argument.expression;
+          if (expression is StringLiteral) {
+            // If it is, we report it.
+            reporter.atNode(expression, _code);
           }
-        });
+        }
       }
     });
   }
