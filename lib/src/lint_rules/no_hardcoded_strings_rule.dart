@@ -9,7 +9,9 @@ class HardcodedStringLintRule extends DartLintRule {
 
   static const _code = LintCode(
     name: 'avoid_hardcoded_strings_in_widgets',
-    problemMessage:
+    problemMessage: 'Hardcoded string detected in widget ⚠️ ',
+    correctionMessage:
+        'Replace hardcoded string with a variable or localized string '
         'String literals should not be declared inside a widget '
         'class. '
         'If this string is used for presentation, such as in a Text widget, '
@@ -18,8 +20,7 @@ class HardcodedStringLintRule extends DartLintRule {
         'it is a sign of primitive obsession.\n\n'
         'Example of correct usage:\n'
         '- Using easy_localization: Text(LocaleKeys.some_key.tr())\n'
-        '- Using Flutter gen-l10n: Text(AppLocalizations.of(context)!.someKey)',
-    correctionMessage:
+        '- Using Flutter gen-l10n: Text(AppLocalizations.of(context)!.someKey) '
         'If this is for presentation:\n'
         '1. Use a localization package (easy_localization or Flutter gen-l10n)\n'
         '2. Generate localization keys\n'
