@@ -19,13 +19,12 @@ dev_dependencies:
     sdk: flutter
 
   flutter_lints: ^5.0.0
-
   flutter_gen_runner: ^5.12.0
   build_runner: ^2.9.0
   app_custom_lints:
     path: ../
-  analyzer: ^7.4.0
-  custom_lint_builder: ^0.8.0
+  analyzer: ^8.1.1 # Dart static analyzer
+  custom_lint_builder: ^0.8.1 # Custom lint builder
 
 flutter:
   uses-material-design: true

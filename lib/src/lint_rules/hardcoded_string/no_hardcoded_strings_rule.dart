@@ -1,8 +1,12 @@
+import 'dart:convert';
+import 'dart:io';
 import 'package:analyzer/dart/ast/ast.dart';
 import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/error/error.dart' show AnalysisError, ErrorSeverity;
 import 'package:analyzer/error/listener.dart';
 import 'package:custom_lint_builder/custom_lint_builder.dart';
+import 'package:path/path.dart' as path;
+part 'fixes/localization_fix.dart';
 
 class HardcodedStringLintRule extends DartLintRule {
   const HardcodedStringLintRule() : super(code: _code);
@@ -129,7 +133,7 @@ class HardcodedStringLintRule extends DartLintRule {
     while (current != null) {
       final className = current.name;
 
-      if (_isWidgetBaseClass(className)) {
+      if (_isWidgetBaseClass(className ?? '')) {
         return true;
       }
 
@@ -202,10 +206,10 @@ class HardcodedStringLintRule extends DartLintRule {
     final technicalPatterns = [
       RegExp(r'^\w+://'),
       RegExp(r'^[\w\-\.]+@[\w\-\.]+\.\w+'),
-      RegExp(r'^#[0-9A-Fa-f]{3,8}'),
+      RegExp('^#[0-9A-Fa-f]{3,8}'),
       RegExp(r'^\d+(\.\d+)?[a-zA-Z]*'),
-      RegExp(r'^[A-Z][A-Z0-9]*_[A-Z0-9_]*'),
-      RegExp(r'^[a-z]+_[a-z_]+'),
+      RegExp('^[A-Z][A-Z0-9]*_[A-Z0-9_]*'),
+      RegExp('^[a-z]+_[a-z_]+'),
       RegExp(r'^/[\w/\-\.]*'),
       RegExp(r'^\w+\.\w+'),
       RegExp(r'^[\w\-]+\.[\w]+'),
@@ -251,7 +255,11 @@ class HardcodedStringLintRule extends DartLintRule {
   }
 
   @override
-  List<Fix> getFixes() => [_AddIgnoreCommentFix(), _ExtractToVariableFix()];
+  List<Fix> getFixes() => [
+    _LocalizeFix(),
+    _AddIgnoreCommentFix(),
+    _ExtractToVariableFix(),
+  ];
 }
 
 class _AddIgnoreCommentFix extends DartFix {
@@ -266,29 +274,29 @@ class _AddIgnoreCommentFix extends DartFix {
     context.registry.addStringLiteral((node) {
       if (!analysisError.sourceRange.intersects(node.sourceRange)) return;
 
-      final changeBuilder = reporter.createChangeBuilder(
-        message: 'Add ignore comment',
-        priority: 80,
-      );
+      final _ =
+          reporter.createChangeBuilder(
+            message: 'Add ignore comment',
+            priority: 80,
+          )..addDartFileEdit((builder) {
+            final compilationUnit = node
+                .thisOrAncestorOfType<CompilationUnit>();
+            if (compilationUnit == null) return;
 
-      changeBuilder.addDartFileEdit((builder) {
-        final compilationUnit = node.thisOrAncestorOfType<CompilationUnit>();
-        if (compilationUnit == null) return;
+            final lineInfo = compilationUnit.lineInfo;
+            final location = lineInfo.getLocation(node.offset);
+            final lineStart = lineInfo.getOffsetOfLine(location.lineNumber - 1);
 
-        final lineInfo = compilationUnit.lineInfo;
-        final location = lineInfo.getLocation(node.offset);
-        final lineStart = lineInfo.getOffsetOfLine(location.lineNumber - 1);
+            final source = compilationUnit.toSource();
+            final currentLineStart = source.substring(lineStart, node.offset);
+            final indentMatch = RegExp(r'^(\s*)').firstMatch(currentLineStart);
+            final indent = indentMatch?.group(1) ?? '';
 
-        final source = compilationUnit.toSource();
-        final currentLineStart = source.substring(lineStart, node.offset);
-        final indentMatch = RegExp(r'^(\s*)').firstMatch(currentLineStart);
-        final indent = indentMatch?.group(1) ?? '';
-
-        builder.addSimpleInsertion(
-          lineStart,
-          '$indent// ignore: avoid_hardcoded_strings_in_widgets\n',
-        );
-      });
+            builder.addSimpleInsertion(
+              lineStart,
+              '$indent// ignore: avoid_hardcoded_strings_in_widgets\n',
+            );
+          });
     });
   }
 }
@@ -308,58 +316,56 @@ class _ExtractToVariableFix extends DartFix {
       final stringValue = node.stringValue;
       if (stringValue == null || stringValue.isEmpty) return;
 
-      final changeBuilder = reporter.createChangeBuilder(
-        message: 'Extract to variable',
-        priority: 70,
-      );
+      final changeBuilder =
+          reporter.createChangeBuilder(
+            message: 'Extract to variable',
+            priority: 70,
+          )..addDartFileEdit((builder) {
+            final variableName = _generateVariableName(stringValue);
 
-      changeBuilder.addDartFileEdit((builder) {
-        final variableName = _generateVariableName(stringValue);
+            var parent = node.parent;
+            while (parent != null &&
+                parent is! MethodDeclaration &&
+                parent is! ClassDeclaration) {
+              parent = parent.parent;
+            }
 
-        var parent = node.parent;
-        while (parent != null &&
-            parent is! MethodDeclaration &&
-            parent is! ClassDeclaration) {
-          parent = parent.parent;
-        }
+            if (parent is MethodDeclaration) {
+              final methodBody = parent.body;
+              if (methodBody is BlockFunctionBody) {
+                final block = methodBody.block;
+                final insertOffset = block.leftBracket.offset + 1;
 
-        if (parent is MethodDeclaration) {
-          final methodBody = parent.body;
-          if (methodBody is BlockFunctionBody) {
-            final block = methodBody.block;
-            final insertOffset = block.leftBracket.offset + 1;
+                builder
+                  ..addSimpleInsertion(
+                    insertOffset,
+                    '\n    const $variableName = ${node.toSource()};\n',
+                  )
+                  ..addSimpleReplacement(node.sourceRange, variableName);
+              }
+            } else if (parent is ClassDeclaration) {
+              final insertOffset = parent.leftBracket.offset + 1;
 
-            builder.addSimpleInsertion(
-              insertOffset,
-              '\n    const $variableName = ${node.toSource()};\n',
-            );
-
-            builder.addSimpleReplacement(node.sourceRange, variableName);
-          }
-        } else if (parent is ClassDeclaration) {
-          final insertOffset = parent.leftBracket.offset + 1;
-
-          builder.addSimpleInsertion(
-            insertOffset,
-            '\n  static const $variableName = ${node.toSource()};\n',
-          );
-
-          builder.addSimpleReplacement(node.sourceRange, variableName);
-        }
-      });
+              builder
+                ..addSimpleInsertion(
+                  insertOffset,
+                  '\n  static const $variableName = ${node.toSource()};\n',
+                )
+                ..addSimpleReplacement(node.sourceRange, variableName);
+            }
+          });
     });
   }
 
   String _generateVariableName(String value) {
-    final words =
-        value
-            .replaceAll(RegExp(r'[^\w\s]'), '')
-            .trim()
-            .toLowerCase()
-            .split(RegExp(r'\s+'))
-            .where((word) => word.isNotEmpty)
-            .take(3)
-            .toList();
+    final words = value
+        .replaceAll(RegExp(r'[^\w\s]'), '')
+        .trim()
+        .toLowerCase()
+        .split(RegExp(r'\s+'))
+        .where((word) => word.isNotEmpty)
+        .take(3)
+        .toList();
 
     if (words.isEmpty) return 'textValue';
 

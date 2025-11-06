@@ -1,6 +1,10 @@
-import 'package:app_custom_lints/src/lint_rules/no_odd_sizes_rule.dart';
+import 'package:app_custom_lints/src/lint_rules/hardcoded_string/no_hardcoded_strings_rule.dart';
+import 'package:app_custom_lints/src/lint_rules/sizes/avoid_edge_insets_all.dart';
+import 'package:app_custom_lints/src/lint_rules/sizes/avoid_edge_insets_only.dart';
+import 'package:app_custom_lints/src/lint_rules/sizes/avoid_edge_insets_symmetric.dart';
+import 'package:app_custom_lints/src/lint_rules/sizes/avoid_sized_box_height.dart';
+import 'package:app_custom_lints/src/lint_rules/sizes/avoid_sized_box_width.dart';
 import 'package:custom_lint_builder/custom_lint_builder.dart';
-import 'package:app_custom_lints/src/lint_rules/no_hardcoded_strings_rule.dart';
 
 /// A custom lint plugin that provides lint rules for analyzing Dart code
 class CustomLintPlugin extends PluginBase {
@@ -14,6 +18,11 @@ class CustomLintPlugin extends PluginBase {
     return [
       const HardcodedStringLintRule(),
       // const EvenNumbersOnlyLintRule(),
+      AvoidSizedBoxHeight(),
+      AvoidSizedBoxWidth(),
+      AvoidEdgeInsetsAll(),
+      AvoidEdgeInsetsSymmetric(),
+      AvoidEdgeInsetsOnly(),
     ];
   }
 }
@@ -47,6 +56,11 @@ class _CustomLints extends PluginBase {
     return [
       const HardcodedStringLintRule(),
       // const EvenNumbersOnlyLintRule(),
+      AvoidSizedBoxHeight(),
+      AvoidSizedBoxWidth(),
+      AvoidEdgeInsetsAll(),
+      AvoidEdgeInsetsSymmetric(),
+      AvoidEdgeInsetsOnly(),
     ];
   }
 }
