@@ -31,18 +31,17 @@ class _SizedBoxHeightToExtensionFix extends DartFix {
       // Remove parentheses if present
       numberValue = numberValue.replaceAll('(', '').replaceAll(')', '');
 
-      final changeBuilder = reporter.createChangeBuilder(
-        message: 'Convert to $numberValue.verticalGap',
-        priority: 80,
-      );
-
-      changeBuilder.addDartFileEdit((builder) {
-        // Replace the entire SizedBox(...) with the extension
-        builder.addSimpleReplacement(
-          error.sourceRange,
-          '$numberValue.verticalGap',
-        );
-      });
+      final changeBuilder =
+          reporter.createChangeBuilder(
+            message: 'Convert to $numberValue.verticalGap',
+            priority: 80,
+          )..addDartFileEdit((builder) {
+            // Replace the entire SizedBox(...) with the extension
+            builder.addSimpleReplacement(
+              error.sourceRange,
+              '$numberValue.verticalGap',
+            );
+          });
     });
   }
 }

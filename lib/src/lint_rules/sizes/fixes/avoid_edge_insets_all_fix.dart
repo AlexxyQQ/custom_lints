@@ -22,7 +22,7 @@ class _EdgeInsetsAllToExtensionFix extends DartFix {
       if (value == null) return;
 
       final changeBuilder = reporter.createChangeBuilder(
-        message: 'Convert to $value.allPadding',
+        message: 'Convert to ${value}.allPadding',
         priority: 80,
       );
 
