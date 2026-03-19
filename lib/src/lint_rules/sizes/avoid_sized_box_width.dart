@@ -8,7 +8,7 @@ import 'package:custom_lint_builder/custom_lint_builder.dart';
 part 'fixes/avoid_sized_box_width_fix.dart';
 
 class AvoidSizedBoxWidth extends DartLintRule {
-  AvoidSizedBoxWidth() : super(code: _code);
+  const AvoidSizedBoxWidth() : super(code: _code);
 
   static const _code = LintCode(
     name: 'avoid_sized_box_width',
@@ -40,7 +40,12 @@ class AvoidSizedBoxWidth extends DartLintRule {
           .where((arg) => arg.name.label.name == 'width')
           .firstOrNull;
 
-      if (widthArg != null && heightArg == null) {
+      final childArg = node.argumentList.arguments
+          .whereType<NamedExpression>()
+          .where((arg) => arg.name.label.name == 'child')
+          .firstOrNull;
+
+      if (widthArg != null && heightArg == null && childArg == null) {
         reporter.atNode(node, code);
       }
     });

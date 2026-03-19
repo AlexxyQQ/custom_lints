@@ -6,7 +6,7 @@ import 'package:custom_lint_builder/custom_lint_builder.dart';
 part './fixes/avoid_edge_insets_only_fix.dart';
 
 class AvoidEdgeInsetsOnly extends DartLintRule {
-  AvoidEdgeInsetsOnly() : super(code: _code);
+  const AvoidEdgeInsetsOnly() : super(code: _code);
 
   static const _code = LintCode(
     name: 'avoid_edge_insets_only',

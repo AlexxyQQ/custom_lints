@@ -9,11 +9,11 @@ class CustomLintPlugin extends PluginBase {
   @override
   List<LintRule> getLintRules(CustomLintConfigs configs) {
     return [
-      AvoidSizedBoxHeight(),
-      AvoidSizedBoxWidth(),
-      AvoidEdgeInsetsAll(),
-      AvoidEdgeInsetsSymmetric(),
-      AvoidEdgeInsetsOnly(),
+      const AvoidSizedBoxHeight(),
+      const AvoidSizedBoxWidth(),
+      const AvoidEdgeInsetsAll(),
+      const AvoidEdgeInsetsSymmetric(),
+      const AvoidEdgeInsetsOnly(),
     ];
   }
 }
@@ -31,11 +31,11 @@ class _CustomLints extends PluginBase {
     }
 
     return [
-      AvoidSizedBoxHeight(),
-      AvoidSizedBoxWidth(),
-      AvoidEdgeInsetsAll(),
-      AvoidEdgeInsetsSymmetric(),
-      AvoidEdgeInsetsOnly(),
+      const AvoidSizedBoxHeight(),
+      const AvoidSizedBoxWidth(),
+      const AvoidEdgeInsetsAll(),
+      const AvoidEdgeInsetsSymmetric(),
+      const AvoidEdgeInsetsOnly(),
     ];
   }
 }

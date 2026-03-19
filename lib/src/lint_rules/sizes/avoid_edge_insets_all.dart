@@ -1,6 +1,5 @@
 // lib/src/avoid_edge_insets_all.dart
 
-import 'package:analyzer/dart/ast/ast.dart';
 import 'package:analyzer/error/error.dart' show AnalysisError, ErrorSeverity;
 import 'package:analyzer/error/listener.dart';
 import 'package:custom_lint_builder/custom_lint_builder.dart';
@@ -8,7 +7,7 @@ import 'package:custom_lint_builder/custom_lint_builder.dart';
 part './fixes/avoid_edge_insets_all_fix.dart';
 
 class AvoidEdgeInsetsAll extends DartLintRule {
-  AvoidEdgeInsetsAll() : super(code: _code);
+  const AvoidEdgeInsetsAll() : super(code: _code);
 
   static const _code = LintCode(
     name: 'avoid_edge_insets_all',

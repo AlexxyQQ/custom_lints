@@ -4,43 +4,71 @@
 [](https://pub.dev/packages/custom_lint)
 [](https://flutter.dev)
 
-A collection of opinionated custom lint rules for Dart & Flutter projects. This package is designed to enforce a strict and consistent design system, improve code quality, and promote best practices like internationalization.
+A collection of opinionated custom lint rules for Dart & Flutter projects. This package enforces a consistent design system by replacing verbose Flutter spacing/padding constructors with fluent extension methods, and promotes an even-number grid system (e.g. 8pt grid).
 
 ---
 
 ## Features
 
-- 🌍 **Enforce Internationalization (i18n)**: The `avoid_string_literals_inside_widget` rule detects hardcoded strings in `Text` widgets, pushing you to use a proper localization flow.
-- 📐 **Enforce Design System Consistency**: The `avoid_odd_numbers_in_ui_extensions` rule ensures all spacing, padding, and radius values are even, helping maintain a consistent grid system (e.g., 8pt grid).
-- 🚀 **Easy Integration**: Simple to set up in any project using the official `custom_lint` package.
-- ⚡ **Fast Analysis**: Written to have a minimal impact on IDE performance and analysis time.
+- **Consistent spacing** — Replace `SizedBox(height/width: ...)` with `.verticalGap` / `.horizontalGap` extensions.
+- **Consistent padding** — Replace `EdgeInsets.all/only/symmetric(...)` with `.allPadding`, `.topOnly`, `.horizontalPadding`, etc.
+- **Automatic fixes** — Every rule ships with a quick-fix so your IDE can auto-migrate code.
+- **Configurable** — Enable/disable rules or change severity per project.
+
+---
+
+## Prerequisites — Extension Methods
+
+All lint rules encourage you to use a `NumExtensionX` extension on `num`. Add the following to your project (e.g. `lib/core/extensions/size.extension.dart`):
+
+```dart
+extension NumExtensionX on num {
+  // ── Spacing ──────────────────────────────────────────────
+  Widget get horizontalGap => SizedBox(width: _even.toDouble());
+  Widget get verticalGap   => SizedBox(height: _even.toDouble());
+
+  // ── Padding ──────────────────────────────────────────────
+  EdgeInsets get allPadding         => EdgeInsets.all(_even.toDouble());
+  EdgeInsets get topOnly            => EdgeInsets.only(top: _even.toDouble());
+  EdgeInsets get bottomOnly         => EdgeInsets.only(bottom: _even.toDouble());
+  EdgeInsets get leftOnly           => EdgeInsets.only(left: _even.toDouble());
+  EdgeInsets get rightOnly          => EdgeInsets.only(right: _even.toDouble());
+  EdgeInsets get horizontalPadding  => EdgeInsets.symmetric(horizontal: _even.toDouble());
+  EdgeInsets get verticalPadding    => EdgeInsets.symmetric(vertical: _even.toDouble());
+
+  // ── Radius ───────────────────────────────────────────────
+  BorderRadius get borderCircular => BorderRadius.all(Radius.circular(_even.toDouble()));
+  BorderRadius get rounded        => BorderRadius.circular(_even.toDouble());
+
+  // Enforces even numbers (rounds odd values up)
+  num get _even => isOdd ? this + 1 : this;
+}
+```
+
+> **Note:** The `_even` getter silently rounds odd values up to the nearest even number, keeping your design grid intact.
+
+---
 
 ## Installation
 
-1.  **Add dependencies**
-
-    Add `custom_lint` and this package to your `pubspec.yaml` under `dev_dependencies`.
+1. **Add dependencies** to `pubspec.yaml`:
 
     ```yaml
     dev_dependencies:
-      custom_lint: ^0.6.4 # Use the latest version
+      custom_lint: ^0.8.1
       app_custom_lints:
         git:
           url: https://github.com/AlexxyQQ/custom_lints.git
-          ref: main # You can also pin to a specific commit hash or tag
+          ref: main
     ```
 
-2.  **Get packages**
-
-    Run the command to fetch the packages.
+2. **Fetch packages:**
 
     ```bash
     flutter pub get
     ```
 
-3.  **Enable the plugin**
-
-    Create or update your `analysis_options.yaml` file to enable the `custom_lint` plugin.
+3. **Enable the plugin** in `analysis_options.yaml`:
 
     ```yaml
     analyzer:
@@ -48,98 +76,299 @@ A collection of opinionated custom lint rules for Dart & Flutter projects. This 
         - custom_lint
     ```
 
+---
+
 ## Available Rules
 
-### `avoid_string_literals_inside_widget`
+### 1. `avoid_sized_box_height`
 
-This rule detects hardcoded string literals inside `Text` widgets to enforce proper internationalization practices. This makes your app easier to translate and maintain.
+**Severity:** error
+**Fix:** Converts `SizedBox(height: value)` → `value.verticalGap`
 
-#### ❌ Bad Code:
+Use the `.verticalGap` extension instead of a bare `SizedBox` with only a `height` argument.
+
+#### Bad
 
 ```dart
-// These will trigger the lint
-Text('Hello World');
-Text(data: 'Welcome User');
+// Triggers: "Use the .verticalGap extension instead of SizedBox(height: ...)."
+const SizedBox(height: 16),
+SizedBox(height: 24),
+SizedBox(height: 8.0),
 ```
 
-#### ✅ Good Code:
-
-**Using Flutter gen-l10n:**
+#### Good
 
 ```dart
-// In your ARB file (e.g., app_en.arb)
-// { "helloWorld": "Hello World" }
-
-// In your widget
-Text(AppLocalizations.of(context)!.helloWorld);
+16.verticalGap,
+24.verticalGap,
+8.verticalGap,
 ```
 
-**Using easy_localization:**
+#### Auto-fix examples
+
+| Before | After |
+|--------|-------|
+| `SizedBox(height: 16)` | `16.verticalGap` |
+| `SizedBox(height: 24.0)` | `24.0.verticalGap` |
+| `const SizedBox(height: 8)` | `8.verticalGap` |
+
+> **Does NOT trigger** when both `height` and `width` are present (e.g. `SizedBox(height: 16, width: 16)`), or when a `child` is present — a `SizedBox` with a child is a sizing container, not a gap.
+
+---
+
+### 2. `avoid_sized_box_width`
+
+**Severity:** error
+**Fix:** Converts `SizedBox(width: value)` → `value.horizontalGap`
+
+Use the `.horizontalGap` extension instead of a bare `SizedBox` with only a `width` argument.
+
+#### Bad
 
 ```dart
-// In your JSON file (e.g., assets/translations/en.json)
-// { "hello_world": "Hello World" }
+// Triggers: "Use the .horizontalGap extension instead of SizedBox(width: ...)."
+const SizedBox(width: 12),
+SizedBox(width: 20),
+SizedBox(width: 4.0),
+```
 
-// In your widget
-Text(LocaleKeys.hello_world.tr());
+#### Good
+
+```dart
+12.horizontalGap,
+20.horizontalGap,
+4.horizontalGap,
+```
+
+#### Auto-fix examples
+
+| Before | After |
+|--------|-------|
+| `SizedBox(width: 12)` | `12.horizontalGap` |
+| `SizedBox(width: 20.0)` | `20.0.horizontalGap` |
+| `const SizedBox(width: 4)` | `4.horizontalGap` |
+
+> **Does NOT trigger** when both `height` and `width` are present, or when a `child` is present.
+
+---
+
+### 3. `avoid_edge_insets_all`
+
+**Severity:** error
+**Fix:** Converts `EdgeInsets.all(value)` → `value.allPadding`
+
+Use the `.allPadding` extension instead of `EdgeInsets.all(...)`.
+
+#### Bad
+
+```dart
+// Triggers: "Use the .allPadding extension instead of EdgeInsets.all(...)."
+Padding(padding: EdgeInsets.all(16)),
+Padding(padding: const EdgeInsets.all(8)),
+Container(
+  padding: EdgeInsets.all(12.0),
+  child: Text('Hello'),
+),
+```
+
+#### Good
+
+```dart
+Padding(padding: 16.allPadding),
+Padding(padding: 8.allPadding),
+Container(
+  padding: 12.allPadding,
+  child: Text('Hello'),
+),
+```
+
+#### Auto-fix examples
+
+| Before | After |
+|--------|-------|
+| `EdgeInsets.all(16)` | `16.allPadding` |
+| `const EdgeInsets.all(8)` | `8.allPadding` |
+| `EdgeInsets.all(12.0)` | `12.0.allPadding` |
+
+---
+
+### 4. `avoid_edge_insets_only`
+
+**Severity:** error
+**Fix:** Converts `EdgeInsets.only(...)` → directional extensions (`.topOnly`, `.bottomOnly`, `.leftOnly`, `.rightOnly`)
+
+Use directional extensions instead of `EdgeInsets.only(...)`.
+
+#### Bad
+
+```dart
+// Triggers: "Use .topOnly, .bottomOnly, .leftOnly, or .rightOnly extensions."
+Padding(padding: EdgeInsets.only(top: 16)),
+Padding(padding: EdgeInsets.only(bottom: 8)),
+Padding(padding: EdgeInsets.only(left: 12)),
+Padding(padding: EdgeInsets.only(right: 4)),
+
+// Multiple sides also trigger
+Padding(padding: EdgeInsets.only(top: 16, bottom: 8)),
+Padding(padding: EdgeInsets.only(left: 12, right: 4)),
+Padding(padding: EdgeInsets.only(top: 8, left: 16)),
+```
+
+#### Good
+
+```dart
+Padding(padding: 16.topOnly),
+Padding(padding: 8.bottomOnly),
+Padding(padding: 12.leftOnly),
+Padding(padding: 4.rightOnly),
+
+// Multiple sides are chained with +
+Padding(padding: 16.topOnly + 8.bottomOnly),
+Padding(padding: 12.leftOnly + 4.rightOnly),
+Padding(padding: 8.topOnly + 16.leftOnly),
+```
+
+#### Auto-fix examples
+
+| Before | After |
+|--------|-------|
+| `EdgeInsets.only(top: 16)` | `16.topOnly` |
+| `EdgeInsets.only(bottom: 8)` | `8.bottomOnly` |
+| `EdgeInsets.only(left: 12)` | `12.leftOnly` |
+| `EdgeInsets.only(right: 4)` | `4.rightOnly` |
+| `EdgeInsets.only(top: 16, bottom: 8)` | `16.topOnly + 8.bottomOnly` |
+| `EdgeInsets.only(left: 12, right: 4)` | `12.leftOnly + 4.rightOnly` |
+| `EdgeInsets.only(top: 8, left: 16, right: 4)` | `8.topOnly + 16.leftOnly + 4.rightOnly` |
+
+---
+
+### 5. `avoid_edge_insets_symmetric`
+
+**Severity:** error
+**Fix:** Converts `EdgeInsets.symmetric(...)` → `.horizontalPadding` / `.verticalPadding`
+
+Use `.horizontalPadding` or `.verticalPadding` extensions instead of `EdgeInsets.symmetric(...)`.
+
+#### Bad
+
+```dart
+// Triggers: "Use .horizontalPadding or .verticalPadding extensions instead."
+Padding(padding: EdgeInsets.symmetric(horizontal: 16)),
+Padding(padding: EdgeInsets.symmetric(vertical: 8)),
+Padding(padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8)),
+Padding(padding: const EdgeInsets.symmetric(horizontal: 24)),
+```
+
+#### Good
+
+```dart
+Padding(padding: 16.horizontalPadding),
+Padding(padding: 8.verticalPadding),
+Padding(padding: 16.horizontalPadding + 8.verticalPadding),
+Padding(padding: 24.horizontalPadding),
+```
+
+#### Auto-fix examples
+
+| Before | After |
+|--------|-------|
+| `EdgeInsets.symmetric(horizontal: 16)` | `16.horizontalPadding` |
+| `EdgeInsets.symmetric(vertical: 8)` | `8.verticalPadding` |
+| `EdgeInsets.symmetric(horizontal: 16, vertical: 8)` | `16.horizontalPadding + 8.verticalPadding` |
+| `const EdgeInsets.symmetric(horizontal: 24)` | `24.horizontalPadding` |
+
+---
+
+## Real-World Before / After
+
+```dart
+// ── BEFORE ──────────────────────────────────────────────────
+Column(
+  children: [
+    Padding(
+      padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      child: Row(
+        children: [
+          Icon(Icons.star),
+          SizedBox(width: 8),
+          Text('Favorites'),
+          SizedBox(width: 12),
+          Padding(
+            padding: EdgeInsets.only(top: 4, bottom: 4),
+            child: Chip(label: Text('New')),
+          ),
+        ],
+      ),
+    ),
+    SizedBox(height: 24),
+    Padding(
+      padding: EdgeInsets.all(16),
+      child: Text('Description'),
+    ),
+  ],
+),
+
+// ── AFTER ───────────────────────────────────────────────────
+Column(
+  children: [
+    Padding(
+      padding: 16.horizontalPadding + 8.verticalPadding,
+      child: Row(
+        children: [
+          Icon(Icons.star),
+          8.horizontalGap,
+          Text('Favorites'),
+          12.horizontalGap,
+          Padding(
+            padding: 4.topOnly + 4.bottomOnly,
+            child: Chip(label: Text('New')),
+          ),
+        ],
+      ),
+    ),
+    24.verticalGap,
+    Padding(
+      padding: 16.allPadding,
+      child: Text('Description'),
+    ),
+  ],
+),
 ```
 
 ---
 
-### `avoid_odd_numbers_in_ui_extensions`
-
-This rule enforces an even-numbered design system by flagging odd numbers used for UI dimensions like padding, spacing, and corner radii. This is especially useful when using a sizing extension on `num`.
-
-#### ❌ Bad Code:
-
-```dart
-// These will trigger the lint
-Padding(padding: 7.allPadding);
-SizedBox(width: 9.w);
-Container(
-  decoration: BoxDecoration(
-    borderRadius: 15.rounded,
-  ),
-);
-```
-
-#### ✅ Good Code:
-
-```dart
-// Use even numbers for consistency
-Padding(padding: 8.allPadding);
-SizedBox(width: 10.w);
-Container(
-  decoration: BoxDecoration(
-    borderRadius: 16.rounded,
-  ),
-);
-```
-
 ## Rule Configuration
 
-You can enable/disable rules or change their severity in your `analysis_options.yaml` file.
+Enable/disable rules or override severity in `analysis_options.yaml`:
 
 ```yaml
 custom_lint:
   rules:
-    # Enable a rule (defaults to a warning)
-    - avoid_string_literals_inside_widget: true
-    # Enable a rule and set its severity to error
-    - avoid_odd_numbers_in_ui_extensions:
-        severity: error
+    - avoid_sized_box_height: true
+    - avoid_sized_box_width: true
+    - avoid_edge_insets_all: true
+    - avoid_edge_insets_only: true
+    - avoid_edge_insets_symmetric: true
+
+    # Override severity for a specific rule
+    - avoid_sized_box_height:
+        severity: warning
 ```
+
+Valid severity values: `error`, `warning`, `info`.
+
+---
 
 ## Contributing
 
-Contributions are welcome\! If you have an idea for a new rule or an improvement, please follow these steps:
+Contributions are welcome! If you have an idea for a new rule or an improvement, please follow these steps:
 
-1.  Fork the repository.
-2.  Create your feature branch (`git checkout -b feature/amazing-feature`).
-3.  Commit your changes (`git commit -m 'Add some amazing feature'`).
-4.  Push to the branch (`git push origin feature/amazing-feature`).
-5.  Open a Pull Request.
+1. Fork the repository.
+2. Create your feature branch (`git checkout -b feature/amazing-feature`).
+3. Commit your changes (`git commit -m 'Add some amazing feature'`).
+4. Push to the branch (`git push origin feature/amazing-feature`).
+5. Open a Pull Request.
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE](https://www.google.com/search?q=LICENSE) file for details.
+This project is licensed under the MIT License — see the [LICENSE](LICENSE) file for details.

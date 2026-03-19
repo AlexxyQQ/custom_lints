@@ -8,7 +8,7 @@ import 'package:custom_lint_builder/custom_lint_builder.dart';
 part './fixes/avoid_edge_insets_symmetric_fix.dart';
 
 class AvoidEdgeInsetsSymmetric extends DartLintRule {
-  AvoidEdgeInsetsSymmetric() : super(code: _code);
+  const AvoidEdgeInsetsSymmetric() : super(code: _code);
 
   static const _code = LintCode(
     name: 'avoid_edge_insets_symmetric',

@@ -22,7 +22,7 @@ class _SizedBoxWidthToExtensionFix extends DartFix {
       if (widthArg == null) return;
 
       final widthValue = widthArg.expression.toSource();
-      String numberValue = widthValue.replaceAll('.w', '').replaceAll('.h', '');
+      var numberValue = widthValue.replaceAll('.w', '').replaceAll('.h', '');
 
       // Remove parentheses if present
       numberValue = numberValue.replaceAll('(', '').replaceAll(')', '');

@@ -8,4 +8,3 @@ analyzer:
 linter:
   rules:
     # Your existing rules
-    avoid_odd_numbers_in_ui_extensions: true # This explicitly enables it

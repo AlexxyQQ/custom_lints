@@ -24,7 +24,7 @@ class _SizedBoxHeightToExtensionFix extends DartFix {
       final heightValue = heightArg.expression.toSource();
 
       // Clean the value: "8.h" -> "8", "12" -> "12"
-      String numberValue = heightValue
+      var numberValue = heightValue
           .replaceAll('.h', '')
           .replaceAll('.w', '');
 
