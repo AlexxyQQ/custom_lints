@@ -1,3 +1,4 @@
+// ignore_for_file: avoid_edge_insets_all, avoid_edge_insets_only, avoid_edge_insets_symmetric, avoid_sized_box_height
 import 'package:flutter/material.dart';
 
 extension NumExtensionX on num {

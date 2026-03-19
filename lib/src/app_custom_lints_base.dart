@@ -1,3 +1,4 @@
+import 'package:app_custom_lints/src/lint_rules/hardcoded_string/avoid_hardcoded_strings.dart';
 import 'package:app_custom_lints/src/lint_rules/sizes/avoid_edge_insets_all.dart';
 import 'package:app_custom_lints/src/lint_rules/sizes/avoid_edge_insets_only.dart';
 import 'package:app_custom_lints/src/lint_rules/sizes/avoid_edge_insets_symmetric.dart';
@@ -14,6 +15,7 @@ class CustomLintPlugin extends PluginBase {
       const AvoidEdgeInsetsAll(),
       const AvoidEdgeInsetsSymmetric(),
       const AvoidEdgeInsetsOnly(),
+      const AvoidHardcodedStrings(),
     ];
   }
 }
@@ -36,6 +38,7 @@ class _CustomLints extends PluginBase {
       const AvoidEdgeInsetsAll(),
       const AvoidEdgeInsetsSymmetric(),
       const AvoidEdgeInsetsOnly(),
+      const AvoidHardcodedStrings(),
     ];
   }
 }

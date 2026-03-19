@@ -47,3 +47,19 @@ flutter_gen:
 
   fonts:
     enabled: true
+
+#============================================================
+# 📜 Custom Scripts (via `rps`)
+#  dart pub global activate rps
+#  EG: rps clean
+#============================================================
+scripts:
+  #============================================================
+  # 🧹 Maintenance & Code Quality
+  #============================================================
+  get: flutter clean && flutter pub get
+  clean: flutter clean && flutter pub get && dart fix --apply && dart format . &&flutter analyze && dart analyze && dart run custom_lint
+  fix: dart fix --apply
+  format: dart format .
+  imports: dart run import_sorter:main
+  analyze: flutter clean && flutter pub get && flutter analyze && dart analyze && dart run custom_lint

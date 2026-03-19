@@ -4,7 +4,7 @@
 [](https://pub.dev/packages/custom_lint)
 [](https://flutter.dev)
 
-A collection of opinionated custom lint rules for Dart & Flutter projects. This package enforces a consistent design system by replacing verbose Flutter spacing/padding constructors with fluent extension methods, and promotes an even-number grid system (e.g. 8pt grid).
+A collection of opinionated custom lint rules for Dart & Flutter projects. This package enforces a consistent design system by replacing verbose Flutter spacing/padding constructors with fluent extension methods, promotes an even-number grid system (e.g. 8pt grid), and catches hardcoded UI strings that should be extracted or localized.
 
 ---
 
@@ -12,6 +12,7 @@ A collection of opinionated custom lint rules for Dart & Flutter projects. This 
 
 - **Consistent spacing** — Replace `SizedBox(height/width: ...)` with `.verticalGap` / `.horizontalGap` extensions.
 - **Consistent padding** — Replace `EdgeInsets.all/only/symmetric(...)` with `.allPadding`, `.topOnly`, `.horizontalPadding`, etc.
+- **Hardcoded string detection** — Warn when display strings are written directly in widget constructors instead of being extracted or localized.
 - **Automatic fixes** — Every rule ships with a quick-fix so your IDE can auto-migrate code.
 - **Configurable** — Enable/disable rules or change severity per project.
 
@@ -279,6 +280,70 @@ Padding(padding: 24.horizontalPadding),
 
 ---
 
+### 6. `avoid_hardcoded_strings`
+
+**Severity:** warning
+**Fix:** Add `// ignore` comment, or extract the string to a `const` variable
+
+Flags string literals written directly inside Widget constructors as display text. Hardcoded UI strings make localization harder and scatter copy across the codebase.
+
+#### Bad
+
+```dart
+// Triggers: "Hardcoded string detected. Use a variable or localized string instead."
+Text('Hello World'),
+Text('Submit'),
+AppBar(title: Text('My App')),
+ElevatedButton(child: Text('Sign in')),
+MyWidget(title: 'Welcome back'),
+SnackBar(content: Text('Something went wrong')),
+AlertDialog(title: Text('Are you sure?')),
+```
+
+#### Good
+
+```dart
+// Extracted to a constant
+const greeting = 'Hello World';
+Text(greeting),
+
+// Using a localization key (easy_localization / gen-l10n)
+Text(LocaleKeys.greeting.tr()),
+Text(AppLocalizations.of(context)!.greeting),
+
+// Suppressed when intentional (e.g. debug-only widget)
+// ignore: avoid_hardcoded_strings
+Text('DEV ONLY — remove before release'),
+```
+
+#### Auto-fix options
+
+| Fix | Result |
+|-----|--------|
+| Add ignore comment | Inserts `// ignore: avoid_hardcoded_strings` above the line |
+| Extract to `const varName` | Hoists the string to a `const` at the top of the current function |
+
+#### What is intentionally skipped
+
+| Category | Example | Reason |
+|----------|---------|--------|
+| Route / path names | `'/home'`, `':id'` | Navigation identifiers, not display text |
+| `snake_case` strings | `'en_US'`, `'api_key'` | Locale codes, config keys |
+| `SCREAMING_CASE` strings | `'PUSH_NOTIFICATION'` | Constant identifiers |
+| Asset / package paths | `'assets/logo.png'`, `'package:foo'` | Resource references |
+| URLs | `'https://example.com'` | Technical values |
+| Hex colors | `'#FF0000'` | CSS/design tokens |
+| Map keys | `{'name': value}` | Data structures |
+| Non-display named params | `fontFamily: 'Roboto'`, `semanticsLabel: 'close'`, `heroTag: 'fab'` | Non-UI parameters |
+| Strings ≤ 2 characters | `'OK'`, `'or'` | Too short to localize meaningfully |
+| Variable/constant declarations | `const label = 'Submit'` | Already a variable |
+
+> **Positional arguments** to any Widget constructor are also checked — not just known widgets like `Text`. Custom widgets with display string positional args will be caught too.
+
+> **Named parameters** are only flagged when they match a known display-text list: `text`, `label`, `title`, `subtitle`, `hint`, `hintText`, `labelText`, `helperText`, `errorText`, `message`, `description`, `content`, `tooltip`, `placeholder`, `buttonText`, `confirmText`, `cancelText`, `emptyText`, `prefixText`, `suffixText`, `counterText`.
+
+---
+
 ## Real-World Before / After
 
 ```dart
@@ -349,10 +414,13 @@ custom_lint:
     - avoid_edge_insets_all: true
     - avoid_edge_insets_only: true
     - avoid_edge_insets_symmetric: true
+    - avoid_hardcoded_strings: true
 
     # Override severity for a specific rule
     - avoid_sized_box_height:
         severity: warning
+    - avoid_hardcoded_strings:
+        severity: info   # downgrade to info if you want non-blocking feedback
 ```
 
 Valid severity values: `error`, `warning`, `info`.
