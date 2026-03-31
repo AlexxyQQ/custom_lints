@@ -1,4 +1,4 @@
-# App Custom Lints
+# Flutter Custom Lints
 
 [](https://opensource.org/licenses/MIT)
 [](https://pub.dev/packages/custom_lint)
@@ -54,28 +54,28 @@ extension NumExtensionX on num {
 
 1. **Add dependencies** to `pubspec.yaml`:
 
-    ```yaml
-    dev_dependencies:
-      custom_lint: ^0.8.1
-      app_custom_lints:
-        git:
-          url: https://github.com/AlexxyQQ/custom_lints.git
-          ref: main
-    ```
+   ```yaml
+   dev_dependencies:
+     custom_lint: ^0.8.1
+     app_custom_lints:
+       git:
+         url: https://github.com/AlexxyQQ/custom_lints.git
+         ref: main
+   ```
 
 2. **Fetch packages:**
 
-    ```bash
-    flutter pub get
-    ```
+   ```bash
+   flutter pub get
+   ```
 
 3. **Enable the plugin** in `analysis_options.yaml`:
 
-    ```yaml
-    analyzer:
-      plugins:
-        - custom_lint
-    ```
+   ```yaml
+   analyzer:
+     plugins:
+       - custom_lint
+   ```
 
 ---
 
@@ -107,11 +107,11 @@ SizedBox(height: 8.0),
 
 #### Auto-fix examples
 
-| Before | After |
-|--------|-------|
-| `SizedBox(height: 16)` | `16.verticalGap` |
-| `SizedBox(height: 24.0)` | `24.0.verticalGap` |
-| `const SizedBox(height: 8)` | `8.verticalGap` |
+| Before                      | After              |
+| --------------------------- | ------------------ |
+| `SizedBox(height: 16)`      | `16.verticalGap`   |
+| `SizedBox(height: 24.0)`    | `24.0.verticalGap` |
+| `const SizedBox(height: 8)` | `8.verticalGap`    |
 
 > **Does NOT trigger** when both `height` and `width` are present (e.g. `SizedBox(height: 16, width: 16)`), or when a `child` is present — a `SizedBox` with a child is a sizing container, not a gap.
 
@@ -143,11 +143,11 @@ SizedBox(width: 4.0),
 
 #### Auto-fix examples
 
-| Before | After |
-|--------|-------|
-| `SizedBox(width: 12)` | `12.horizontalGap` |
-| `SizedBox(width: 20.0)` | `20.0.horizontalGap` |
-| `const SizedBox(width: 4)` | `4.horizontalGap` |
+| Before                     | After                |
+| -------------------------- | -------------------- |
+| `SizedBox(width: 12)`      | `12.horizontalGap`   |
+| `SizedBox(width: 20.0)`    | `20.0.horizontalGap` |
+| `const SizedBox(width: 4)` | `4.horizontalGap`    |
 
 > **Does NOT trigger** when both `height` and `width` are present, or when a `child` is present.
 
@@ -185,11 +185,11 @@ Container(
 
 #### Auto-fix examples
 
-| Before | After |
-|--------|-------|
-| `EdgeInsets.all(16)` | `16.allPadding` |
-| `const EdgeInsets.all(8)` | `8.allPadding` |
-| `EdgeInsets.all(12.0)` | `12.0.allPadding` |
+| Before                    | After             |
+| ------------------------- | ----------------- |
+| `EdgeInsets.all(16)`      | `16.allPadding`   |
+| `const EdgeInsets.all(8)` | `8.allPadding`    |
+| `EdgeInsets.all(12.0)`    | `12.0.allPadding` |
 
 ---
 
@@ -231,14 +231,14 @@ Padding(padding: 8.topOnly + 16.leftOnly),
 
 #### Auto-fix examples
 
-| Before | After |
-|--------|-------|
-| `EdgeInsets.only(top: 16)` | `16.topOnly` |
-| `EdgeInsets.only(bottom: 8)` | `8.bottomOnly` |
-| `EdgeInsets.only(left: 12)` | `12.leftOnly` |
-| `EdgeInsets.only(right: 4)` | `4.rightOnly` |
-| `EdgeInsets.only(top: 16, bottom: 8)` | `16.topOnly + 8.bottomOnly` |
-| `EdgeInsets.only(left: 12, right: 4)` | `12.leftOnly + 4.rightOnly` |
+| Before                                        | After                                   |
+| --------------------------------------------- | --------------------------------------- |
+| `EdgeInsets.only(top: 16)`                    | `16.topOnly`                            |
+| `EdgeInsets.only(bottom: 8)`                  | `8.bottomOnly`                          |
+| `EdgeInsets.only(left: 12)`                   | `12.leftOnly`                           |
+| `EdgeInsets.only(right: 4)`                   | `4.rightOnly`                           |
+| `EdgeInsets.only(top: 16, bottom: 8)`         | `16.topOnly + 8.bottomOnly`             |
+| `EdgeInsets.only(left: 12, right: 4)`         | `12.leftOnly + 4.rightOnly`             |
 | `EdgeInsets.only(top: 8, left: 16, right: 4)` | `8.topOnly + 16.leftOnly + 4.rightOnly` |
 
 ---
@@ -271,12 +271,12 @@ Padding(padding: 24.horizontalPadding),
 
 #### Auto-fix examples
 
-| Before | After |
-|--------|-------|
-| `EdgeInsets.symmetric(horizontal: 16)` | `16.horizontalPadding` |
-| `EdgeInsets.symmetric(vertical: 8)` | `8.verticalPadding` |
+| Before                                              | After                                      |
+| --------------------------------------------------- | ------------------------------------------ |
+| `EdgeInsets.symmetric(horizontal: 16)`              | `16.horizontalPadding`                     |
+| `EdgeInsets.symmetric(vertical: 8)`                 | `8.verticalPadding`                        |
 | `EdgeInsets.symmetric(horizontal: 16, vertical: 8)` | `16.horizontalPadding + 8.verticalPadding` |
-| `const EdgeInsets.symmetric(horizontal: 24)` | `24.horizontalPadding` |
+| `const EdgeInsets.symmetric(horizontal: 24)`        | `24.horizontalPadding`                     |
 
 ---
 
@@ -318,25 +318,25 @@ Text('DEV ONLY — remove before release'),
 
 #### Auto-fix options
 
-| Fix | Result |
-|-----|--------|
-| Add ignore comment | Inserts `// ignore: avoid_hardcoded_strings` above the line |
+| Fix                        | Result                                                            |
+| -------------------------- | ----------------------------------------------------------------- |
+| Add ignore comment         | Inserts `// ignore: avoid_hardcoded_strings` above the line       |
 | Extract to `const varName` | Hoists the string to a `const` at the top of the current function |
 
 #### What is intentionally skipped
 
-| Category | Example | Reason |
-|----------|---------|--------|
-| Route / path names | `'/home'`, `':id'` | Navigation identifiers, not display text |
-| `snake_case` strings | `'en_US'`, `'api_key'` | Locale codes, config keys |
-| `SCREAMING_CASE` strings | `'PUSH_NOTIFICATION'` | Constant identifiers |
-| Asset / package paths | `'assets/logo.png'`, `'package:foo'` | Resource references |
-| URLs | `'https://example.com'` | Technical values |
-| Hex colors | `'#FF0000'` | CSS/design tokens |
-| Map keys | `{'name': value}` | Data structures |
-| Non-display named params | `fontFamily: 'Roboto'`, `semanticsLabel: 'close'`, `heroTag: 'fab'` | Non-UI parameters |
-| Strings ≤ 2 characters | `'OK'`, `'or'` | Too short to localize meaningfully |
-| Variable/constant declarations | `const label = 'Submit'` | Already a variable |
+| Category                       | Example                                                             | Reason                                   |
+| ------------------------------ | ------------------------------------------------------------------- | ---------------------------------------- |
+| Route / path names             | `'/home'`, `':id'`                                                  | Navigation identifiers, not display text |
+| `snake_case` strings           | `'en_US'`, `'api_key'`                                              | Locale codes, config keys                |
+| `SCREAMING_CASE` strings       | `'PUSH_NOTIFICATION'`                                               | Constant identifiers                     |
+| Asset / package paths          | `'assets/logo.png'`, `'package:foo'`                                | Resource references                      |
+| URLs                           | `'https://example.com'`                                             | Technical values                         |
+| Hex colors                     | `'#FF0000'`                                                         | CSS/design tokens                        |
+| Map keys                       | `{'name': value}`                                                   | Data structures                          |
+| Non-display named params       | `fontFamily: 'Roboto'`, `semanticsLabel: 'close'`, `heroTag: 'fab'` | Non-UI parameters                        |
+| Strings ≤ 2 characters         | `'OK'`, `'or'`                                                      | Too short to localize meaningfully       |
+| Variable/constant declarations | `const label = 'Submit'`                                            | Already a variable                       |
 
 > **Positional arguments** to any Widget constructor are also checked — not just known widgets like `Text`. Custom widgets with display string positional args will be caught too.
 
@@ -420,7 +420,7 @@ custom_lint:
     - avoid_sized_box_height:
         severity: warning
     - avoid_hardcoded_strings:
-        severity: info   # downgrade to info if you want non-blocking feedback
+        severity: info # downgrade to info if you want non-blocking feedback
 ```
 
 Valid severity values: `error`, `warning`, `info`.
