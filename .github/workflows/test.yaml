@@ -7,28 +7,34 @@ on:
 
 jobs:
   test:
-    name: "Dart ${{ matrix.sdk }}"
+    name: "Flutter ${{ matrix.channel }}"
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        # Test against different Dart versions to ensure broad compatibility
-        sdk: [ '3.0.0', '3.3.0', 'stable', 'beta' ]
+        # Test against different Flutter channels to ensure broad compatibility
+        channel: [ 'stable', 'beta' ]
         
     steps:
       - uses: actions/checkout@v4
       
-      - uses: dart-lang/setup-dart@v1
+      # Use subosito/flutter-action instead of setup-dart
+      - uses: subosito/flutter-action@v2
         with:
-          sdk: ${{ matrix.sdk }}
+          channel: ${{ matrix.channel }}
           
       - name: Install dependencies
-        run: dart pub get
+        run: flutter pub get
         
+      - name: Install example dependencies
+        working-directory: example
+        run: flutter pub get
+
       - name: Analyze code
-        run: dart analyze --fatal-infos
+        run: flutter analyze --fatal-infos
         
       - name: Run tests
+        # Note: testing custom_lints requires dart test usually, or flutter test
         run: dart test
 
   test-lowest-deps:
@@ -37,13 +43,13 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       
-      - uses: dart-lang/setup-dart@v1
+      - uses: subosito/flutter-action@v2
         with:
-          sdk: stable
+          channel: 'stable'
           
       - name: Install dependencies (lowest versions)
         # Tests your lower bounds (e.g. analyzer >=5.0.0)
-        run: dart pub downgrade
+        run: flutter pub downgrade
         
       - name: Run tests on lowest dependencies
         run: dart test
