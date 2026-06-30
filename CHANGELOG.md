@@ -1,3 +1,10 @@
+## 2.0.0
+
+- **Breaking:** Migrated entirely from `custom_lint_builder` and `custom_lint` to Dart's official `analysis_server_plugin` architecture.
+- **Breaking:** Removed auto-fixes (quick fixes) temporarily as part of the migration to the new plugin system API (`CorrectionProducer`).
+- Rules now run natively inside `dart analyze` and the Dart Analysis Server without needing a separate `dart run custom_lint` command.
+- Updated minimum Dart SDK constraint to `^3.10.0`.
+
 ## 1.2.0
 
 - **New rule:** `avoid_hardcoded_strings` — warns when a string literal is used directly as display text inside a Widget constructor. Ships with two quick-fixes: add an ignore comment, or extract the string to a `const` variable.

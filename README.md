@@ -13,8 +13,6 @@ A collection of opinionated custom lint rules for Dart & Flutter projects. This 
 - **Consistent spacing** — Replace `SizedBox(height/width: ...)` with `.verticalGap` / `.horizontalGap` extensions.
 - **Consistent padding** — Replace `EdgeInsets.all/only/symmetric(...)` with `.allPadding`, `.topOnly`, `.horizontalPadding`, etc.
 - **Hardcoded string detection** — Warn when display strings are written directly in widget constructors instead of being extracted or localized.
-- **Automatic fixes** — Every rule ships with a quick-fix so your IDE can auto-migrate code.
-- **Configurable** — Enable/disable rules or change severity per project.
 
 ---
 
@@ -56,7 +54,6 @@ extension NumExtensionX on num {
 
    ```yaml
    dev_dependencies:
-     custom_lint: ^0.8.1
      app_custom_lints:
        git:
          url: https://github.com/AlexxyQQ/custom_lints.git
@@ -74,7 +71,7 @@ extension NumExtensionX on num {
    ```yaml
    analyzer:
      plugins:
-       - custom_lint
+       - app_custom_lints
    ```
 
 ---
@@ -84,7 +81,6 @@ extension NumExtensionX on num {
 ### 1. `avoid_sized_box_height`
 
 **Severity:** error
-**Fix:** Converts `SizedBox(height: value)` → `value.verticalGap`
 
 Use the `.verticalGap` extension instead of a bare `SizedBox` with only a `height` argument.
 
@@ -105,13 +101,6 @@ SizedBox(height: 8.0),
 8.verticalGap,
 ```
 
-#### Auto-fix examples
-
-| Before                      | After              |
-| --------------------------- | ------------------ |
-| `SizedBox(height: 16)`      | `16.verticalGap`   |
-| `SizedBox(height: 24.0)`    | `24.0.verticalGap` |
-| `const SizedBox(height: 8)` | `8.verticalGap`    |
 
 > **Does NOT trigger** when both `height` and `width` are present (e.g. `SizedBox(height: 16, width: 16)`), or when a `child` is present — a `SizedBox` with a child is a sizing container, not a gap.
 
@@ -120,7 +109,6 @@ SizedBox(height: 8.0),
 ### 2. `avoid_sized_box_width`
 
 **Severity:** error
-**Fix:** Converts `SizedBox(width: value)` → `value.horizontalGap`
 
 Use the `.horizontalGap` extension instead of a bare `SizedBox` with only a `width` argument.
 
@@ -141,13 +129,6 @@ SizedBox(width: 4.0),
 4.horizontalGap,
 ```
 
-#### Auto-fix examples
-
-| Before                     | After                |
-| -------------------------- | -------------------- |
-| `SizedBox(width: 12)`      | `12.horizontalGap`   |
-| `SizedBox(width: 20.0)`    | `20.0.horizontalGap` |
-| `const SizedBox(width: 4)` | `4.horizontalGap`    |
 
 > **Does NOT trigger** when both `height` and `width` are present, or when a `child` is present.
 
@@ -156,7 +137,6 @@ SizedBox(width: 4.0),
 ### 3. `avoid_edge_insets_all`
 
 **Severity:** error
-**Fix:** Converts `EdgeInsets.all(value)` → `value.allPadding`
 
 Use the `.allPadding` extension instead of `EdgeInsets.all(...)`.
 
@@ -183,20 +163,12 @@ Container(
 ),
 ```
 
-#### Auto-fix examples
-
-| Before                    | After             |
-| ------------------------- | ----------------- |
-| `EdgeInsets.all(16)`      | `16.allPadding`   |
-| `const EdgeInsets.all(8)` | `8.allPadding`    |
-| `EdgeInsets.all(12.0)`    | `12.0.allPadding` |
 
 ---
 
 ### 4. `avoid_edge_insets_only`
 
 **Severity:** error
-**Fix:** Converts `EdgeInsets.only(...)` → directional extensions (`.topOnly`, `.bottomOnly`, `.leftOnly`, `.rightOnly`)
 
 Use directional extensions instead of `EdgeInsets.only(...)`.
 
@@ -229,24 +201,12 @@ Padding(padding: 12.leftOnly + 4.rightOnly),
 Padding(padding: 8.topOnly + 16.leftOnly),
 ```
 
-#### Auto-fix examples
-
-| Before                                        | After                                   |
-| --------------------------------------------- | --------------------------------------- |
-| `EdgeInsets.only(top: 16)`                    | `16.topOnly`                            |
-| `EdgeInsets.only(bottom: 8)`                  | `8.bottomOnly`                          |
-| `EdgeInsets.only(left: 12)`                   | `12.leftOnly`                           |
-| `EdgeInsets.only(right: 4)`                   | `4.rightOnly`                           |
-| `EdgeInsets.only(top: 16, bottom: 8)`         | `16.topOnly + 8.bottomOnly`             |
-| `EdgeInsets.only(left: 12, right: 4)`         | `12.leftOnly + 4.rightOnly`             |
-| `EdgeInsets.only(top: 8, left: 16, right: 4)` | `8.topOnly + 16.leftOnly + 4.rightOnly` |
 
 ---
 
 ### 5. `avoid_edge_insets_symmetric`
 
 **Severity:** error
-**Fix:** Converts `EdgeInsets.symmetric(...)` → `.horizontalPadding` / `.verticalPadding`
 
 Use `.horizontalPadding` or `.verticalPadding` extensions instead of `EdgeInsets.symmetric(...)`.
 
@@ -269,21 +229,12 @@ Padding(padding: 16.horizontalPadding + 8.verticalPadding),
 Padding(padding: 24.horizontalPadding),
 ```
 
-#### Auto-fix examples
-
-| Before                                              | After                                      |
-| --------------------------------------------------- | ------------------------------------------ |
-| `EdgeInsets.symmetric(horizontal: 16)`              | `16.horizontalPadding`                     |
-| `EdgeInsets.symmetric(vertical: 8)`                 | `8.verticalPadding`                        |
-| `EdgeInsets.symmetric(horizontal: 16, vertical: 8)` | `16.horizontalPadding + 8.verticalPadding` |
-| `const EdgeInsets.symmetric(horizontal: 24)`        | `24.horizontalPadding`                     |
 
 ---
 
 ### 6. `avoid_hardcoded_strings`
 
 **Severity:** warning
-**Fix:** Add `// ignore` comment, or extract the string to a `const` variable
 
 Flags string literals written directly inside Widget constructors as display text. Hardcoded UI strings make localization harder and scatter copy across the codebase.
 
@@ -316,12 +267,6 @@ Text(AppLocalizations.of(context)!.greeting),
 Text('DEV ONLY — remove before release'),
 ```
 
-#### Auto-fix options
-
-| Fix                        | Result                                                            |
-| -------------------------- | ----------------------------------------------------------------- |
-| Add ignore comment         | Inserts `// ignore: avoid_hardcoded_strings` above the line       |
-| Extract to `const varName` | Hoists the string to a `const` at the top of the current function |
 
 #### What is intentionally skipped
 
@@ -399,31 +344,6 @@ Column(
   ],
 ),
 ```
-
----
-
-## Rule Configuration
-
-Enable/disable rules or override severity in `analysis_options.yaml`:
-
-```yaml
-custom_lint:
-  rules:
-    - avoid_sized_box_height: true
-    - avoid_sized_box_width: true
-    - avoid_edge_insets_all: true
-    - avoid_edge_insets_only: true
-    - avoid_edge_insets_symmetric: true
-    - avoid_hardcoded_strings: true
-
-    # Override severity for a specific rule
-    - avoid_sized_box_height:
-        severity: warning
-    - avoid_hardcoded_strings:
-        severity: info # downgrade to info if you want non-blocking feedback
-```
-
-Valid severity values: `error`, `warning`, `info`.
 
 ---
 
