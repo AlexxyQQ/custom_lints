@@ -30,7 +30,7 @@ class MyHomePage extends StatelessWidget {
       body: Column(
         children: [
           // Text
-          Text(
+          const Text(
             'This is a big text.',
             style: TextStyle(
               color: Colors.black,
@@ -39,7 +39,7 @@ class MyHomePage extends StatelessWidget {
             ),
           ),
           21.verticalGap,
-          Text(
+          const Text(
             'This is a small text.',
             style: TextStyle(
               color: Colors.black,
@@ -47,8 +47,8 @@ class MyHomePage extends StatelessWidget {
               fontWeight: FontWeight.w400,
             ),
           ),
-          SizedBox(height: 20),
-          SizedBox(height: 20, child: Text('data')),
+          const SizedBox(height: 20),
+          const SizedBox(height: 20, child: Text('data')),
 
           20.verticalGap,
         ],

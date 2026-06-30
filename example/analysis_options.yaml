@@ -1,9 +1,89 @@
 include: package:flutter_lints/flutter.yaml
 
-plugins:
-  app_custom_lints: any
+analyzer:
+  plugins:
+    - app_custom_lints
 
-# Optional: Configure additional linter rules
+  errors:
+    invalid_annotation_target: ignore # Ignores annotation misuse warnings.
+    missing_required_param: true # Reports error if required params are missing.
+    invalid_assignment: true # Reports error when assigning wrong types.
+  exclude:
+    - packages/** # Exclude external package code.
+    - "**/*.g.dart" # Exclude json_serializable generated files.
+    - lib/**.freezed.dart # Exclude Freezed-generated files.
+    - lib/**.gr.dart # Exclude auto_route generated routes.
+    - lib/localization/generated/ # Exclude localization generated files.
+    - lib/**/__generated__/ # Exclude auto-generated directories.
+    - lib/**/example_env.dart # Exclude example environment files.
+    - lib/localization/** # Exclude all localization-related files.
+    - bricks/** # Exclude Mason/brick templates.
+
+plugins:
+  app_custom_lints:
+    # Optional: override the lint message text shown in the IDE.
+    # Both keys are optional; omitting one keeps its built-in default.
+    options:
+      message: "Hardcoded string! Externalize to your ARB file."
+      correction_message: "See docs/i18n.md for instructions."
+    diagnostics:
+      avoid_hardcoded_strings: true
 linter:
+  # The lint rules applied to this project. These enforce code style,
+  # readability, and safety. Rules can be disabled per-file using
+  # `// ignore: rule_name` or globally here.
   rules:
-    # Your existing rules
+    # === STYLE & CONSISTENCY ===
+    prefer_relative_imports: true
+    avoid_print: true # Disallows using print(), prefer logger.
+    prefer_single_quotes: true # Enforces single quotes for strings.
+    sort_constructors_first: true # Constructors before other members.
+    prefer_const_constructors: true # Prefer const constructors where possible.
+    prefer_const_constructors_in_immutables: true # Enforce const constructors in immutable classes.
+    prefer_const_declarations: true # Prefer const over final for compile-time constants.
+    prefer_final_locals: true # Make local variables final if not reassigned.
+    directives_ordering: true # Enforce consistent import/export ordering.
+    combinators_ordering: true # Enforce consistent ordering for show/hide combinators.
+    eol_at_end_of_file: true # Require a newline at the end of each file.
+    sort_child_properties_last: true # Put child: last in widget constructors.
+
+    # === BEST PRACTICES ===
+    always_specify_types: false # Explicit typing instead of var.
+    use_key_in_widget_constructors: true # Require Key in widget constructors.
+    require_trailing_commas: true # Require trailing commas in multi-line params.
+    lines_longer_than_80_chars: false # Allow long lines.
+    public_member_api_docs: false # No enforced docs on public APIs.
+    sort_pub_dependencies: ignore # Don't enforce pubspec deps ordering.
+    use_enums: true # Encourage enums instead of constants/strings.
+    cascade_invocations: true # Use cascades (..) for chained calls.
+    # always_declare_return_types: true # Explicit return types on functions.
+    always_put_control_body_on_new_line: true # Control bodies on new lines.
+    always_put_required_named_parameters_first: true # Required named params before optional ones.
+
+    # === ERROR PREVENTION ===
+    unrelated_type_equality_checks: true # Prevent comparing unrelated types.
+    invalid_case_patterns: true # Enforce valid switch/pattern cases.
+    unnecessary_breaks: true # Remove unnecessary breaks.
+    avoid_returning_null_for_void: true # Don’t return null in void funcs.
+    unnecessary_await_in_return: true # Avoid `return await future;`.
+    unnecessary_null_checks: true # Prevent redundant null checks.
+    unnecessary_nullable_for_final_variable_declarations: true # Avoid marking final vars nullable if not needed.
+    null_check_on_nullable_type_parameter: true # Forbid unnecessary null checks on nullable type params.
+    no_literal_bool_comparisons: true # Don’t compare directly with true/false.
+    unnecessary_to_list_in_spreads: true # Avoid redundant .toList() in spread operators.
+    unnecessary_null_aware_operator_on_extension_on_nullable: true # Prevent redundant `?.` on extension calls.
+
+    # === RESOURCE HANDLING ===
+    cancel_subscriptions: true # Ensure StreamSubscriptions are canceled.
+    close_sinks: true # Ensure sinks (StreamControllers, etc.) are closed.
+
+    # === WIDGET USAGE ===
+    use_decorated_box: true # Prefer DecoratedBox over Container if only decoration is used.
+    use_colored_box: true # Prefer ColoredBox over Container if only color is used.
+    avoid_unnecessary_containers: true # Avoid redundant Containers.
+    avoid_redundant_argument_values: true # Don’t pass args with default values.
+
+    # === OTHER ===
+    prefer_generic_function_type_aliases: true # Prefer generic function type aliases (typedef).
+    join_return_with_assignment: true # Inline assignment and return for conciseness.
+

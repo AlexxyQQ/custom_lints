@@ -42,18 +42,18 @@ class _Visitor extends SimpleAstVisitor<void> {
     }
 
     final heightArg = node.argumentList.arguments
-        .whereType<NamedExpression>()
-        .where((arg) => arg.name.label.name == 'height')
+        .whereType<NamedArgument>()
+        .where((arg) => arg.name.lexeme == 'height')
         .firstOrNull;
 
     final widthArg = node.argumentList.arguments
-        .whereType<NamedExpression>()
-        .where((arg) => arg.name.label.name == 'width')
+        .whereType<NamedArgument>()
+        .where((arg) => arg.name.lexeme == 'width')
         .firstOrNull;
 
     final childArg = node.argumentList.arguments
-        .whereType<NamedExpression>()
-        .where((arg) => arg.name.label.name == 'child')
+        .whereType<NamedArgument>()
+        .where((arg) => arg.name.lexeme == 'child')
         .firstOrNull;
 
     if (widthArg != null && heightArg == null && childArg == null) {

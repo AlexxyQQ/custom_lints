@@ -69,9 +69,48 @@ extension NumExtensionX on num {
 3. **Enable the plugin** in `analysis_options.yaml`:
 
    ```yaml
+   # This file configures the analyzer, which statically analyzes Dart code to
+   # check for errors, warnings, and lints.
+   #
+   # The issues identified by the analyzer are surfaced in the UI of Dart-enabled
+   # IDEs (https://dart.dev/tools#ides-and-editors). The analyzer can also be
+   # invoked from the command line by running `flutter analyze`.
+
+   # The following line activates a set of recommended lints for Flutter apps,
+   # packages, and plugins designed to encourage good coding practices.
+   include: package:flutter_lints/flutter.yaml
+
    analyzer:
      plugins:
        - app_custom_lints
+
+   plugins:
+     app_custom_lints:
+       # Optional: override the lint message text shown in the IDE.
+       # Both keys are optional; omitting one keeps its built-in default.
+       options:
+         message: "Hardcoded string! Externalize to your ARB file."
+         correction_message: "See docs/i18n.md for instructions."
+       diagnostics:
+         avoid_hardcoded_strings: true
+
+   linter:
+     # The lint rules applied to this project can be customized in the
+     # section below to disable rules from the `package:flutter_lints/flutter.yaml`
+     # included above or to enable additional rules. A list of all available lints
+     # and their documentation is published at https://dart.dev/lints.
+     #
+     # Instead of disabling a lint rule for the entire project in the
+     # section below, it can also be suppressed for a single line of code
+     # or a specific dart file by using the `// ignore: name_of_lint` and
+     # `// ignore_for_file: name_of_lint` syntax on the line or in the file
+     # producing the lint.
+     rules:
+       # avoid_print: false  # Uncomment to disable the `avoid_print` rule
+       # prefer_single_quotes: true  # Uncomment to enable the `prefer_single_quotes` rule
+
+   # Additional information about this file can be found at
+   # https://dart.dev/guides/language/analysis-options
    ```
 
 ---
@@ -101,7 +140,6 @@ SizedBox(height: 8.0),
 8.verticalGap,
 ```
 
-
 > **Does NOT trigger** when both `height` and `width` are present (e.g. `SizedBox(height: 16, width: 16)`), or when a `child` is present — a `SizedBox` with a child is a sizing container, not a gap.
 
 ---
@@ -128,7 +166,6 @@ SizedBox(width: 4.0),
 20.horizontalGap,
 4.horizontalGap,
 ```
-
 
 > **Does NOT trigger** when both `height` and `width` are present, or when a `child` is present.
 
@@ -162,7 +199,6 @@ Container(
   child: Text('Hello'),
 ),
 ```
-
 
 ---
 
@@ -201,7 +237,6 @@ Padding(padding: 12.leftOnly + 4.rightOnly),
 Padding(padding: 8.topOnly + 16.leftOnly),
 ```
 
-
 ---
 
 ### 5. `avoid_edge_insets_symmetric`
@@ -228,7 +263,6 @@ Padding(padding: 8.verticalPadding),
 Padding(padding: 16.horizontalPadding + 8.verticalPadding),
 Padding(padding: 24.horizontalPadding),
 ```
-
 
 ---
 
@@ -266,7 +300,6 @@ Text(AppLocalizations.of(context)!.greeting),
 // ignore: avoid_hardcoded_strings
 Text('DEV ONLY — remove before release'),
 ```
-
 
 #### What is intentionally skipped
 

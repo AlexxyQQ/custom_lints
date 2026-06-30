@@ -162,8 +162,8 @@ class _Visitor extends SimpleAstVisitor<void> {
 
   bool _isNonDisplayNamedParam(StringLiteral node) {
     final parent = node.parent;
-    if (parent is NamedExpression) {
-      return _nonDisplayParams.contains(parent.name.label.name);
+    if (parent is NamedArgument) {
+      return _nonDisplayParams.contains(parent.name.lexeme);
     }
     return false;
   }
@@ -174,8 +174,8 @@ class _Visitor extends SimpleAstVisitor<void> {
     final parent = node.parent;
 
     // Case 1: Named argument — only flag if it's a known display param
-    if (parent is NamedExpression) {
-      if (!_displayParams.contains(parent.name.label.name)) return false;
+    if (parent is NamedArgument) {
+      if (!_displayParams.contains(parent.name.lexeme)) return false;
       final argList = parent.parent;
       if (argList is! ArgumentList) return false;
       return _isWidgetConstructor(argList.parent);
