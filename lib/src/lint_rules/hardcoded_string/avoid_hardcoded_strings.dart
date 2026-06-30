@@ -1,25 +1,45 @@
-// The analyzer element API is in transition; ClassElement / element / supertype
-// are still functional but marked deprecated pending migration to element2.
-// ignore_for_file: deprecated_member_use
-
+import 'package:analyzer/analysis_rule/analysis_rule.dart';
+import 'package:analyzer/analysis_rule/rule_context.dart';
+import 'package:analyzer/analysis_rule/rule_visitor_registry.dart';
 import 'package:analyzer/dart/ast/ast.dart';
+import 'package:analyzer/dart/ast/visitor.dart';
 import 'package:analyzer/dart/element/element.dart';
-import 'package:analyzer/error/error.dart' show AnalysisError, ErrorSeverity;
-import 'package:analyzer/error/listener.dart';
-import 'package:custom_lint_builder/custom_lint_builder.dart';
+import 'package:analyzer/error/error.dart';
 
-class AvoidHardcodedStrings extends DartLintRule {
-  const AvoidHardcodedStrings() : super(code: _code);
+class AvoidHardcodedStrings extends AnalysisRule {
+  AvoidHardcodedStrings()
+      : super(
+          name: 'avoid_hardcoded_strings',
+          description: 'Detects hardcoded strings in widget constructors.',
+        );
 
-  static const _code = LintCode(
-    name: 'avoid_hardcoded_strings',
-    problemMessage:
-        'Hardcoded string detected. '
-        'Use a variable or localized string instead.',
+  static const LintCode _code = LintCode(
+    'avoid_hardcoded_strings',
+    'Hardcoded string detected. Use a variable or localized string instead.',
     correctionMessage:
         'Extract this string to a constant variable or use a localization key.',
-    errorSeverity: ErrorSeverity.WARNING,
   );
+
+  @override
+  LintCode get diagnosticCode => _code;
+
+  @override
+  void registerNodeProcessors(
+    RuleVisitorRegistry registry,
+    RuleContext context,
+  ) {
+    final visitor = _Visitor(this, context);
+    registry
+      ..addSimpleStringLiteral(this, visitor)
+      ..addStringInterpolation(this, visitor);
+  }
+}
+
+class _Visitor extends SimpleAstVisitor<void> {
+  _Visitor(this.rule, this.context);
+
+  final AnalysisRule rule;
+  final RuleContext context;
 
   /// Named parameters whose values are user-visible display text.
   static const _displayParams = {
@@ -69,15 +89,18 @@ class AvoidHardcodedStrings extends DartLintRule {
   };
 
   @override
-  void run(
-    CustomLintResolver resolver,
-    ErrorReporter reporter,
-    CustomLintContext context,
-  ) {
-    context.registry.addStringLiteral((node) {
-      if (_shouldSkip(node)) return;
-      reporter.atNode(node, _code);
-    });
+  void visitSimpleStringLiteral(SimpleStringLiteral node) {
+    _handleStringLiteral(node);
+  }
+
+  @override
+  void visitStringInterpolation(StringInterpolation node) {
+    _handleStringLiteral(node);
+  }
+
+  void _handleStringLiteral(StringLiteral node) {
+    if (_shouldSkip(node)) return;
+    rule.reportAtNode(node);
   }
 
   bool _shouldSkip(StringLiteral node) {

@@ -1,8 +1,7 @@
 include: package:flutter_lints/flutter.yaml
 
-analyzer:
-  plugins:
-    - custom_lint
+plugins:
+  app_custom_lints: any
 
 # Optional: Configure additional linter rules
 linter:

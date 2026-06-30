@@ -1,56 +1,63 @@
+import 'package:analyzer/analysis_rule/analysis_rule.dart';
+import 'package:analyzer/analysis_rule/rule_context.dart';
+import 'package:analyzer/analysis_rule/rule_visitor_registry.dart';
 import 'package:analyzer/dart/ast/ast.dart';
-import 'package:analyzer/error/error.dart' show AnalysisError, ErrorSeverity;
-import 'package:analyzer/error/listener.dart';
-import 'package:custom_lint_builder/custom_lint_builder.dart';
+import 'package:analyzer/dart/ast/visitor.dart';
+import 'package:analyzer/error/error.dart';
 
-part './fixes/avoid_sized_box_height_fix.dart';
-
-class AvoidSizedBoxHeight extends DartLintRule {
-  const AvoidSizedBoxHeight() : super(code: _code);
-
+class AvoidSizedBoxHeight extends AnalysisRule {
   static const _code = LintCode(
-    name: 'avoid_sized_box_height',
-    problemMessage:
-        'Use the .verticalGap extension instead of SizedBox(height: ...).',
+    'avoid_sized_box_height',
+    'Use the .verticalGap extension instead of SizedBox(height: ...).',
     correctionMessage: 'Try using .verticalGap instead.',
-    errorSeverity: ErrorSeverity.ERROR,
   );
 
+  AvoidSizedBoxHeight()
+      : super(
+          name: 'avoid_sized_box_height',
+          description: 'Use the .verticalGap extension instead of SizedBox(height: ...).',
+        );
+
   @override
-  void run(
-    CustomLintResolver resolver,
-    ErrorReporter reporter,
-    CustomLintContext context,
-  ) {
-    context.registry.addInstanceCreationExpression((node) {
-      // Check if it's a SizedBox
-      final type = node.staticType?.getDisplayString(withNullability: false);
-      if (type != 'SizedBox') {
-        return;
-      }
+  LintCode get diagnosticCode => _code;
 
-      // Check for a 'height' argument and no 'width' argument
-      final heightArg = node.argumentList.arguments
-          .whereType<NamedExpression>()
-          .where((arg) => arg.name.label.name == 'height')
-          .firstOrNull;
-
-      final widthArg = node.argumentList.arguments
-          .whereType<NamedExpression>()
-          .where((arg) => arg.name.label.name == 'width')
-          .firstOrNull;
-
-      final childArg = node.argumentList.arguments
-          .whereType<NamedExpression>()
-          .where((arg) => arg.name.label.name == 'child')
-          .firstOrNull;
-
-      if (heightArg != null && widthArg == null && childArg == null) {
-        reporter.atNode(node, code);
-      }
-    });
+  @override
+  void registerNodeProcessors(RuleVisitorRegistry registry, RuleContext context) {
+    final visitor = _Visitor(this, context);
+    registry.addInstanceCreationExpression(this, visitor);
   }
+}
+
+class _Visitor extends SimpleAstVisitor<void> {
+  final AnalysisRule rule;
+  final RuleContext context;
+
+  _Visitor(this.rule, this.context);
 
   @override
-  List<Fix> getFixes() => [_SizedBoxHeightToExtensionFix()];
+  void visitInstanceCreationExpression(InstanceCreationExpression node) {
+    final type = node.staticType?.getDisplayString(withNullability: false);
+    if (type != 'SizedBox') {
+      return;
+    }
+
+    final heightArg = node.argumentList.arguments
+        .whereType<NamedExpression>()
+        .where((arg) => arg.name.label.name == 'height')
+        .firstOrNull;
+
+    final widthArg = node.argumentList.arguments
+        .whereType<NamedExpression>()
+        .where((arg) => arg.name.label.name == 'width')
+        .firstOrNull;
+
+    final childArg = node.argumentList.arguments
+        .whereType<NamedExpression>()
+        .where((arg) => arg.name.label.name == 'child')
+        .firstOrNull;
+
+    if (heightArg != null && widthArg == null && childArg == null) {
+      rule.reportAtNode(node);
+    }
+  }
 }

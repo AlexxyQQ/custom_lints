@@ -24,7 +24,6 @@ dev_dependencies:
   app_custom_lints:
     path: ../
   analyzer: ^8.1.1 # Dart static analyzer
-  custom_lint_builder: ^0.8.1 # Custom lint builder
 
 flutter:
   uses-material-design: true
@@ -58,8 +57,8 @@ scripts:
   # 🧹 Maintenance & Code Quality
   #============================================================
   get: flutter clean && flutter pub get
-  clean: flutter clean && flutter pub get && dart fix --apply && dart format . &&flutter analyze && dart analyze && dart run custom_lint
+  clean: flutter clean && flutter pub get && dart fix --apply && dart format . &&flutter analyze && dart analyze
   fix: dart fix --apply
   format: dart format .
   imports: dart run import_sorter:main
-  analyze: flutter clean && flutter pub get && flutter analyze && dart analyze && dart run custom_lint
+  analyze: flutter clean && flutter pub get && flutter analyze && dart analyze

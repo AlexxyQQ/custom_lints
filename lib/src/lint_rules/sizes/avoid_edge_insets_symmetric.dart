@@ -1,37 +1,44 @@
-// lib/src/avoid_edge_insets_symmetric.dart
-
+import 'package:analyzer/analysis_rule/analysis_rule.dart';
+import 'package:analyzer/analysis_rule/rule_context.dart';
+import 'package:analyzer/analysis_rule/rule_visitor_registry.dart';
 import 'package:analyzer/dart/ast/ast.dart';
-import 'package:analyzer/error/error.dart' show AnalysisError, ErrorSeverity;
-import 'package:analyzer/error/listener.dart';
-import 'package:custom_lint_builder/custom_lint_builder.dart';
+import 'package:analyzer/dart/ast/visitor.dart';
+import 'package:analyzer/error/error.dart';
 
-part './fixes/avoid_edge_insets_symmetric_fix.dart';
-
-class AvoidEdgeInsetsSymmetric extends DartLintRule {
-  const AvoidEdgeInsetsSymmetric() : super(code: _code);
-
+class AvoidEdgeInsetsSymmetric extends AnalysisRule {
   static const _code = LintCode(
-    name: 'avoid_edge_insets_symmetric',
-    problemMessage:
-        'Use .horizontalPadding or .verticalPadding extensions instead.',
-    errorSeverity: ErrorSeverity.ERROR,
+    'avoid_edge_insets_symmetric',
+    'Use .horizontalPadding or .verticalPadding extensions instead.',
   );
 
-  @override
-  void run(
-    CustomLintResolver resolver,
-    ErrorReporter reporter,
-    CustomLintContext context,
-  ) {
-    context.registry.addInstanceCreationExpression((node) {
-      final constructorName = node.constructorName.toSource();
-      if (constructorName == 'EdgeInsets.symmetric' ||
-          constructorName == 'const EdgeInsets.symmetric') {
-        reporter.atNode(node, code);
-      }
-    });
-  }
+  AvoidEdgeInsetsSymmetric()
+      : super(
+          name: 'avoid_edge_insets_symmetric',
+          description: 'Use .horizontalPadding or .verticalPadding extensions instead.',
+        );
 
   @override
-  List<Fix> getFixes() => [_EdgeInsetsSymmetricToExtensionFix()];
+  LintCode get diagnosticCode => _code;
+
+  @override
+  void registerNodeProcessors(RuleVisitorRegistry registry, RuleContext context) {
+    final visitor = _Visitor(this, context);
+    registry.addInstanceCreationExpression(this, visitor);
+  }
+}
+
+class _Visitor extends SimpleAstVisitor<void> {
+  final AnalysisRule rule;
+  final RuleContext context;
+
+  _Visitor(this.rule, this.context);
+
+  @override
+  void visitInstanceCreationExpression(InstanceCreationExpression node) {
+    final constructorName = node.constructorName.toSource();
+    if (constructorName == 'EdgeInsets.symmetric' ||
+        constructorName == 'const EdgeInsets.symmetric') {
+      rule.reportAtNode(node);
+    }
+  }
 }
