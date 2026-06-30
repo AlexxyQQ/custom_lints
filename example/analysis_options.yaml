@@ -21,13 +21,7 @@ analyzer:
 
 plugins:
   app_custom_lints:
-    # Optional: override the lint message text shown in the IDE.
-    # Both keys are optional; omitting one keeps its built-in default.
-    options:
-      message: "Hardcoded string! Externalize to your ARB file."
-      correction_message: "See docs/i18n.md for instructions."
-    diagnostics:
-      avoid_hardcoded_strings: true
+
 linter:
   # The lint rules applied to this project. These enforce code style,
   # readability, and safety. Rules can be disabled per-file using

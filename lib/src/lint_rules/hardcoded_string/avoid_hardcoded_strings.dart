@@ -8,16 +8,17 @@ import 'package:analyzer/error/error.dart';
 
 class AvoidHardcodedStrings extends AnalysisRule {
   AvoidHardcodedStrings()
-      : super(
-          name: 'avoid_hardcoded_strings',
-          description: 'Detects hardcoded strings in widget constructors.',
-        );
+    : super(
+        name: 'avoid_hardcoded_strings',
+        description: 'Detects hardcoded strings in widget constructors.',
+      );
 
   static const LintCode _code = LintCode(
     'avoid_hardcoded_strings',
     'Hardcoded string detected. Use a variable or localized string instead.',
     correctionMessage:
         'Extract this string to a constant variable or use a localization key.',
+    severity: DiagnosticSeverity.ERROR,
   );
 
   @override

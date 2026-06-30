@@ -10,19 +10,24 @@ class AvoidSizedBoxWidth extends AnalysisRule {
     'avoid_sized_box_width',
     'Use the .horizontalGap extension instead of SizedBox(width: ...).',
     correctionMessage: 'Try using .horizontalGap instead.',
+    severity: DiagnosticSeverity.ERROR,
   );
 
   AvoidSizedBoxWidth()
-      : super(
-          name: 'avoid_sized_box_width',
-          description: 'Use the .horizontalGap extension instead of SizedBox(width: ...).',
-        );
+    : super(
+        name: 'avoid_sized_box_width',
+        description:
+            'Use the .horizontalGap extension instead of SizedBox(width: ...).',
+      );
 
   @override
   LintCode get diagnosticCode => _code;
 
   @override
-  void registerNodeProcessors(RuleVisitorRegistry registry, RuleContext context) {
+  void registerNodeProcessors(
+    RuleVisitorRegistry registry,
+    RuleContext context,
+  ) {
     final visitor = _Visitor(this, context);
     registry.addInstanceCreationExpression(this, visitor);
   }
