@@ -33,9 +33,12 @@ jobs:
       - name: Analyze code
         run: flutter analyze --fatal-infos
         
-      - name: Run tests
-        # Note: testing custom_lints requires dart test usually, or flutter test
+      - name: Run unit tests
         run: dart test
+
+      - name: Run custom lints in example
+        working-directory: example
+        run: dart run custom_lint
 
   test-lowest-deps:
     name: "Test Lowest Dependencies"
